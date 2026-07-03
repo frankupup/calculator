@@ -1,5 +1,4 @@
 import { TabType, CurrencyType } from '../constants/Constants'
-import { QuotationFormData } from '../model/QuotationData'
 import { QuotationTab } from '../components/QuotationTab'
 import { HistoryView } from '../components/HistoryView'
 import { ExchangeRateFetcher, RateInfo } from '../utils/ExchangeRateFetcher'

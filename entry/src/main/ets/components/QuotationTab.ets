@@ -15,6 +15,7 @@ export struct QuotationTab {
   @State searchKeyword: string = ''
   @State searchResults: QuotationRecord[] = []
   @State showDropdown: boolean = false
+  @State isSelecting: boolean = false
   @State product: string = ''
   @State price: string = ''
   @State factory: string = ''
@@ -25,6 +26,10 @@ export struct QuotationTab {
   @State freight: string = ''
   @State profitRate: string = ''
   @State results: CalcResult[] = []
+  @State showPackageDropdown: boolean = false
+  @State isSelectingPackage: boolean = false
+  @State packageResults: QuotationRecord[] = []
+  private packageInputController: TextInputController = new TextInputController()
 
   build() {
     Scroll() {
@@ -45,7 +50,7 @@ export struct QuotationTab {
           Text(this.rateDate)
             .fontSize(14)
             .fontColor('#666666')
-          Text(this.rate)
+          Text(parseFloat(this.rate).toFixed(2))
             .fontSize(14)
             .fontColor('#333333')
             .fontWeight(FontWeight.Medium)
@@ -57,9 +62,9 @@ export struct QuotationTab {
             .fontColor('#999999')
             .margin({ left: 8 })
           TextInput({ text: this.executeRate, placeholder: '汇率' })
-            .type(InputType.Number)
+            .type(InputType.Normal)
             .fontSize(14)
-            .width(70)
+            .width(80)
             .height(32)
             .padding({ left: 4, right: 4 })
             .border({ width: 1, color: '#CCCCCC', radius: 4 })
@@ -79,15 +84,19 @@ export struct QuotationTab {
             .onChange((value: string) => {
               this.searchKeyword = value
               this.product = value
-              this.doSearch()
+              if (this.searchKeyword.length === 0) {
+                this.showAllProducts()
+              } else {
+                this.doSearch()
+              }
             })
             .onFocus(() => {
               this.showAllProducts()
             })
             .onBlur(() => {
-              setTimeout(() => {
+              if (!this.isSelecting) {
                 this.showDropdown = false
-              }, 200)
+              }
             })
             .width('100%')
 
@@ -95,18 +104,17 @@ export struct QuotationTab {
             List({ space: 0 }) {
               ForEach(this.searchResults, (item: QuotationRecord, index: number) => {
                 ListItem() {
-                  Column() {
+                  Row() {
                     Text(item.product)
                       .fontSize(14)
                       .fontColor('#333333')
                       .fontWeight(FontWeight.Medium)
-                    Text(item.factory + ' | ' + item.containerType + ' | ' + item.packageType + ' | ' + item.quantity + '吨')
+                    Text(' ' + item.factory + ' | ' + item.packageType + ' | ' + item.containerType + ' | ' + item.quantity + ' | ' + item.surcharge)
                       .fontSize(12)
                       .fontColor('#999999')
-                      .margin({ top: 2 })
                   }
                   .width('100%')
-                  .alignItems(HorizontalAlign.Start)
+                  .alignItems(VerticalAlign.Center)
                   .padding({ left: 12, right: 12, top: 10, bottom: 10 })
                   .onClick(() => {
                     this.product = item.product
@@ -118,8 +126,12 @@ export struct QuotationTab {
                     this.searchKeyword = item.product
                     this.showDropdown = false
                   })
+                  .onTouch((event: TouchEvent) => {
+                    if (event.type === TouchType.Down) {
+                      this.isSelecting = true
+                    }
+                  })
                 }
-                .border({ width: { bottom: 0.5 }, color: '#EEEEEE' })
               }, (item: QuotationRecord, index: number) => item.product + '_' + index.toString())
             }
             .width('100%')
@@ -171,20 +183,84 @@ export struct QuotationTab {
         .padding({ left: 16, right: 16 })
 
         Row({ space: 8 }) {
-          Column() {
-            Text('包装')
-              .fontSize(12)
-              .fontColor('#999999')
-            TextInput({ text: this.packageType, placeholder: '包装' })
-              .fontSize(14)
-              .height(40)
-              .padding({ left: 4, right: 4 })
-              .border({ width: 1, color: '#CCCCCC', radius: 4 })
-              .onChange((value: string) => {
-                this.packageType = value
-              })
+          Stack({ alignContent: Alignment.TopStart }) {
+            Column() {
+              Text('包装')
+                .fontSize(12)
+                .fontColor('#999999')
+              TextInput({ text: this.packageType, placeholder: '包装', controller: this.packageInputController })
+                .fontSize(14)
+                .height(40)
+                .padding({ left: 4, right: 4 })
+                .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                .onChange((value: string) => {
+                  this.packageType = value
+                })
+                .onFocus(() => {
+                  // 如果正在选择列表项，则不显示下拉框
+                  if (!this.isSelectingPackage) {
+                    // 如果包装不为空且产品不为空，显示包装列表
+                    if (this.packageType.length > 0 && this.product.length > 0) {
+                      this.packageResults = QuotationRepository.getInstance().getPackagesByProduct(this.tabType, this.product)
+                      this.showPackageDropdown = this.packageResults.length > 0
+                    }
+                  }
+                })
+                .onBlur(() => {
+                  // 延迟隐藏下拉框，让点击事件有机会触发
+                  setTimeout(() => {
+                    this.showPackageDropdown = false
+                    this.isSelectingPackage = false
+                  }, 150)
+                })
+            }
+            .width('100%')
+
+            // 包装下拉列表（悬浮显示）
+            if (this.showPackageDropdown && this.packageResults.length > 0) {
+              Column() {
+                ForEach(this.packageResults, (item: QuotationRecord, index: number) => {
+                  Row() {
+                    Text(item.packageType)
+                      .fontSize(14)
+                      .fontColor('#333333')
+                  }
+                  .width('100%')
+                  .height(40)
+                  .padding({ left: 8, right: 8 })
+                  .backgroundColor(Color.White)
+                  .onClick(() => {
+                    this.isSelectingPackage = true
+                    this.packageType = item.packageType
+                    // 根据产品和包装填充柜型、数量、杂费
+                    let record: QuotationRecord | null = QuotationRepository.getInstance().getFirstByProductAndPackage(this.tabType, this.product, item.packageType)
+                    if (record !== null) {
+                      this.containerType = record.containerType
+                      this.quantity = record.quantity
+                      this.surcharge = record.surcharge
+                    }
+                    // 关闭下拉框
+                    this.showPackageDropdown = false
+                    // 让输入框失去焦点
+                    this.packageInputController.stopEditing()
+                    // 延迟重置选择状态
+                    setTimeout(() => {
+                      this.isSelectingPackage = false
+                    }, 200)
+                  })
+                }, (item: QuotationRecord, index: number) => index.toString())
+              }
+              .width('100%')
+              .constraintSize({ maxHeight: 200 })
+              .backgroundColor(Color.White)
+              .border({ width: { left: 1, right: 1, bottom: 1 }, color: '#E0E0E0', radius: { bottomLeft: 4, bottomRight: 4 } })
+              .shadow({ radius: 4, color: '#1F000000', offsetY: 2 })
+              .position({ x: 0, y: 56 })
+              .zIndex(999)
+            }
           }
           .layoutWeight(1)
+          .height(56)
 
           Column() {
             Text('柜型')
@@ -201,6 +277,7 @@ export struct QuotationTab {
           }
           .layoutWeight(1)
         }
+        .zIndex(10)
         .width('100%')
         .padding({ left: 16, right: 16 })
 

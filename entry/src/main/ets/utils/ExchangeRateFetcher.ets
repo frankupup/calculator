@@ -29,23 +29,27 @@ export class ExchangeRateFetcher {
 
   static parseRate(html: string): RateInfo {
     let info: RateInfo = new RateInfo()
-    let cleaned: string = html.replace(/<script[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[\s\S]*?<\/style>/gi, '')
-    let dateMatch: RegExpExecArray | null = /(\d{4}-\d{2}-\d{2})/.exec(cleaned)
-    if (dateMatch === null) {
-      return info
-    }
-    info.date = dateMatch[1]
-    let afterDate: string = cleaned.substring(dateMatch.index + dateMatch[0].length)
-    let numPattern: RegExp = new RegExp('\\b(\\d{3,4}\\.\\d{2,4})\\b', 'g')
-    let numMatch: RegExpExecArray | null = numPattern.exec(afterDate)
-    while (numMatch !== null) {
-      let val: number = parseFloat(numMatch[1])
-      if (val >= 600 && val <= 900) {
-        info.rate = Math.round(val) / 100
-        break
+    let rowPattern: RegExp = new RegExp('<tr[^>]*>([\\s\\S]*?)</tr>', 'gi')
+    let rowMatch: RegExpExecArray | null = rowPattern.exec(html)
+    while (rowMatch !== null) {
+      let rowContent: string = rowMatch[1]
+      let dateMatch: RegExpExecArray | null = /(\d{4}-\d{2}-\d{2})/.exec(rowContent)
+      if (dateMatch === null) {
+        rowMatch = rowPattern.exec(html)
+        continue
       }
-      numMatch = numPattern.exec(afterDate)
+      let numPattern: RegExp = new RegExp('\\b(\\d{3,4}\\.\\d{2,4})\\b', 'g')
+      let numMatch: RegExpExecArray | null = numPattern.exec(rowContent)
+      while (numMatch !== null) {
+        let val: number = parseFloat(numMatch[1])
+        if (val >= 600 && val <= 900) {
+          info.date = dateMatch[1]
+          info.rate = Math.round(val * 100) / 10000
+          return info
+        }
+        numMatch = numPattern.exec(rowContent)
+      }
+      rowMatch = rowPattern.exec(html)
     }
     return info
   }

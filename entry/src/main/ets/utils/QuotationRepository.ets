@@ -47,6 +47,23 @@ export class QuotationRepository {
 
   search(tabType: string, keyword: string): QuotationRecord[] {
     let allRecords: QuotationRecord[] = this.dataMap[tabType] || []
+    
+    // 按产品、工厂、包装、柜型、数量、杂费升序排序
+    allRecords.sort((a: QuotationRecord, b: QuotationRecord) => {
+      if (a.product !== b.product) return a.product.localeCompare(b.product)
+      if (a.factory !== b.factory) return a.factory.localeCompare(b.factory)
+      if (a.packageType !== b.packageType) return a.packageType.localeCompare(b.packageType)
+      if (a.containerType !== b.containerType) return a.containerType.localeCompare(b.containerType)
+      // 数量按数值比较
+      let quantityA: number = parseFloat(a.quantity) || 0
+      let quantityB: number = parseFloat(b.quantity) || 0
+      if (quantityA !== quantityB) return quantityA - quantityB
+      // 杂费按数值比较
+      let surchargeA: number = parseFloat(a.surcharge) || 0
+      let surchargeB: number = parseFloat(b.surcharge) || 0
+      return surchargeA - surchargeB
+    })
+    
     if (keyword.length === 0) {
       return allRecords.slice(0, 20)
     }
@@ -61,5 +78,46 @@ export class QuotationRepository {
       }
     }
     return results
+  }
+
+  // 根据产品名称获取包装列表（去重）
+  getPackagesByProduct(tabType: string, product: string): QuotationRecord[] {
+    let allRecords: QuotationRecord[] = this.dataMap[tabType] || []
+    let upperProduct: string = product.toUpperCase()
+    let results: QuotationRecord[] = []
+    let packageSet: Set<string> = new Set()
+    
+    for (let i = 0; i < allRecords.length; i++) {
+      if (allRecords[i].product.toUpperCase() === upperProduct) {
+        // 去重：同一个包装只保留一条记录
+        if (!packageSet.has(allRecords[i].packageType)) {
+          packageSet.add(allRecords[i].packageType)
+          results.push(allRecords[i])
+        }
+      }
+    }
+    
+    // 按包装升序排序
+    results.sort((a: QuotationRecord, b: QuotationRecord) => {
+      return a.packageType.localeCompare(b.packageType)
+    })
+    
+    return results
+  }
+
+  // 根据产品和包装获取匹配的第一条记录
+  getFirstByProductAndPackage(tabType: string, product: string, packageType: string): QuotationRecord | null {
+    let allRecords: QuotationRecord[] = this.dataMap[tabType] || []
+    let upperProduct: string = product.toUpperCase()
+    let upperPackage: string = packageType.toUpperCase()
+    
+    for (let i = 0; i < allRecords.length; i++) {
+      if (allRecords[i].product.toUpperCase() === upperProduct &&
+          allRecords[i].packageType.toUpperCase() === upperPackage) {
+        return allRecords[i]
+      }
+    }
+    
+    return null
   }
 }
