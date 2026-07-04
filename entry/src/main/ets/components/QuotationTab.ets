@@ -16,6 +16,7 @@ export struct QuotationTab {
   @State searchResults: QuotationRecord[] = []
   @State showDropdown: boolean = false
   @State isSelecting: boolean = false
+  private isFillingData: boolean = false
   @State product: string = ''
   @State price: string = ''
   @State factory: string = ''
@@ -30,6 +31,7 @@ export struct QuotationTab {
   @State isSelectingPackage: boolean = false
   @State packageResults: QuotationRecord[] = []
   private packageInputController: TextInputController = new TextInputController()
+  private searchInputController: TextInputController = new TextInputController()
 
   build() {
     Scroll() {
@@ -76,7 +78,7 @@ export struct QuotationTab {
         .padding({ left: 16, right: 16 })
 
         Column() {
-          TextInput({ text: this.searchKeyword, placeholder: '搜索产品' })
+          TextInput({ text: this.searchKeyword, placeholder: '搜索产品', controller: this.searchInputController })
             .fontSize(14)
             .height(40)
             .padding({ left: 12, right: 12 })
@@ -84,6 +86,10 @@ export struct QuotationTab {
             .onChange((value: string) => {
               this.searchKeyword = value
               this.product = value
+              if (this.isFillingData) {
+                this.isFillingData = false
+                return
+              }
               if (this.searchKeyword.length === 0) {
                 this.showAllProducts()
               } else {
@@ -116,19 +122,21 @@ export struct QuotationTab {
                   .width('100%')
                   .alignItems(VerticalAlign.Center)
                   .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-                  .onClick(() => {
-                    this.product = item.product
-                    this.factory = item.factory
-                    this.packageType = item.packageType
-                    this.containerType = item.containerType
-                    this.quantity = item.quantity
-                    this.surcharge = item.surcharge
-                    this.searchKeyword = item.product
-                    this.showDropdown = false
-                  })
                   .onTouch((event: TouchEvent) => {
                     if (event.type === TouchType.Down) {
                       this.isSelecting = true
+                    } else if (event.type === TouchType.Up) {
+                      this.product = item.product
+                      this.factory = item.factory
+                      this.packageType = item.packageType
+                      this.containerType = item.containerType
+                      this.quantity = item.quantity
+                      this.surcharge = item.surcharge
+                      this.isFillingData = true
+                      this.searchKeyword = item.product
+                      this.showDropdown = false
+                      this.searchResults = []
+                      this.searchInputController.stopEditing()
                     }
                   })
                 }
