@@ -97,7 +97,11 @@ export struct QuotationTab {
               }
             })
             .onFocus(() => {
-              this.showAllProducts()
+              if (this.searchKeyword.length > 0) {
+                this.doSearch()
+              } else {
+                this.showAllProducts()
+              }
             })
             .onBlur(() => {
               if (!this.isSelecting) {
@@ -132,6 +136,9 @@ export struct QuotationTab {
                       this.containerType = item.containerType
                       this.quantity = item.quantity
                       this.surcharge = item.surcharge
+                      if (!this.surcharge) {
+                        this.surcharge = '0'
+                      }
                       this.isFillingData = true
                       this.searchKeyword = item.product
                       this.showDropdown = false
@@ -161,7 +168,7 @@ export struct QuotationTab {
               .fontSize(12)
               .fontColor('#999999')
             TextInput({ text: this.price, placeholder: '价格' })
-              .type(InputType.Number)
+              .type(InputType.NUMBER_DECIMAL)
               .fontSize(14)
               .height(40)
               .padding({ left: 4, right: 4 })
@@ -246,6 +253,9 @@ export struct QuotationTab {
                       this.containerType = record.containerType
                       this.quantity = record.quantity
                       this.surcharge = record.surcharge
+                      if (!this.surcharge) {
+                        this.surcharge = '0'
+                      }
                     }
                     // 关闭下拉框
                     this.showPackageDropdown = false
@@ -295,7 +305,7 @@ export struct QuotationTab {
               .fontSize(12)
               .fontColor('#999999')
             TextInput({ text: this.quantity, placeholder: '数量' })
-              .type(InputType.Number)
+              .type(InputType.NUMBER_DECIMAL)
               .fontSize(14)
               .height(40)
               .padding({ left: 4, right: 4 })
@@ -311,7 +321,7 @@ export struct QuotationTab {
               .fontSize(12)
               .fontColor('#999999')
             TextInput({ text: this.surcharge, placeholder: '杂费' })
-              .type(InputType.Number)
+              .type(InputType.NUMBER_DECIMAL)
               .fontSize(14)
               .height(40)
               .padding({ left: 4, right: 4 })
@@ -330,8 +340,8 @@ export struct QuotationTab {
             Text('运费')
               .fontSize(12)
               .fontColor('#999999')
-            TextInput({ text: this.freight, placeholder: '运费(USD)' })
-              .type(InputType.Number)
+            TextInput({ text: this.freight, placeholder: this.currency === CurrencyType.USD ? 'USD' : 'EURO' })
+              .type(InputType.NUMBER_DECIMAL)
               .fontSize(14)
               .height(40)
               .padding({ left: 4, right: 4 })
@@ -346,8 +356,8 @@ export struct QuotationTab {
             Text('利润率')
               .fontSize(12)
               .fontColor('#999999')
-            TextInput({ text: this.profitRate, placeholder: '利润率%' })
-              .type(InputType.Number)
+            TextInput({ text: this.profitRate, placeholder: '%' })
+              .type(InputType.NUMBER_DECIMAL)
               .fontSize(14)
               .height(40)
               .padding({ left: 4, right: 4 })
