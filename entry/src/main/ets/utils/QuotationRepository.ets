@@ -46,35 +46,16 @@ export class QuotationRepository {
   }
 
   search(tabType: string, keyword: string): QuotationRecord[] {
-    let allRecords: QuotationRecord[] = this.dataMap[tabType] || []
-    
-    // 按产品、工厂、包装、柜型、数量、杂费升序排序
-    allRecords.sort((a: QuotationRecord, b: QuotationRecord) => {
-      if (a.product !== b.product) return a.product.localeCompare(b.product)
-      if (a.factory !== b.factory) return a.factory.localeCompare(b.factory)
-      if (a.packageType !== b.packageType) return a.packageType.localeCompare(b.packageType)
-      if (a.containerType !== b.containerType) return a.containerType.localeCompare(b.containerType)
-      // 数量按数值比较
-      let quantityA: number = parseFloat(a.quantity) || 0
-      let quantityB: number = parseFloat(b.quantity) || 0
-      if (quantityA !== quantityB) return quantityA - quantityB
-      // 杂费按数值比较
-      let surchargeA: number = parseFloat(a.surcharge) || 0
-      let surchargeB: number = parseFloat(b.surcharge) || 0
-      return surchargeA - surchargeB
-    })
-    
+    let allRecords: QuotationRecord[] = (this.dataMap[tabType] || []).slice()
+
     if (keyword.length === 0) {
-      return allRecords.slice(0, 20)
+      return allRecords
     }
     let upperKeyword: string = keyword.toUpperCase()
     let results: QuotationRecord[] = []
     for (let i = 0; i < allRecords.length; i++) {
       if (allRecords[i].product.toUpperCase().indexOf(upperKeyword) >= 0) {
         results.push(allRecords[i])
-        if (results.length >= 20) {
-          break
-        }
       }
     }
     return results

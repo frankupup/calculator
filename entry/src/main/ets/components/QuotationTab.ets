@@ -410,8 +410,11 @@ export struct QuotationTab {
                 .fontSize(14)
                 .fontColor('#666666')
               Text(', CIF ' + item.cifPrice.toString())
-                .fontSize(14)
-                .fontColor('#666666')
+                  .fontSize(14)
+                  .fontColor('#666666')
+                Text(', ' + item.profit.toString())
+                  .fontSize(14)
+                  .fontColor('#666666')
             }
             .width('100%')
             .padding({ left: 16, right: 16 })
@@ -458,16 +461,26 @@ export struct QuotationTab {
 
     let calcResults: CalcResult[] = []
     let profitRates: number[] = [profitRateVal - 1, profitRateVal, profitRateVal + 1]
-    // FOB = 价格/1.13/汇率 + 杂费/汇率/数量
-    let baseCost: number = priceVal / 1.13 / execRate + surchargeVal / execRate / quantityVal
+    let baseCost: number = 0
+    if (this.tabType === 'zeroRebate') {
+      baseCost = priceVal / execRate + surchargeVal / execRate / quantityVal
+    } else if (this.tabType === 'usd') {
+      baseCost = priceVal + surchargeVal / execRate / quantityVal
+    } else if (this.tabType === 'rmb') {
+      baseCost = priceVal / 1.13 + surchargeVal / quantityVal
+    } else {
+      baseCost = priceVal / 1.13 / execRate + surchargeVal / execRate / quantityVal
+    }
 
     for (let i = 0; i < profitRates.length; i++) {
       let pr: number = profitRates[i]
-      // FOB = baseCost * (1 + 利润率/100), 向上取整
       let fob: number = Math.ceil(baseCost * (1 + pr / 100))
-      // CFR = FOB + 运费/数量, 向上取整
-      let cfr: number = Math.ceil(fob + freightVal / quantityVal)
-      // CIF = CFR + CFR*1.1*0.0005/数量, 向上取整
+      let cfr: number = 0
+      if (this.tabType === 'rmb') {
+        cfr = Math.ceil(fob + freightVal * execRate / quantityVal)
+      } else {
+        cfr = Math.ceil(fob + freightVal / quantityVal)
+      }
       let cif: number = Math.ceil(cfr + cfr * 1.1 * 0.0005 / quantityVal)
       let result: CalcResult = new CalcResult()
       result.fobPrice = fob
