@@ -5,6 +5,7 @@ import { DataStore } from '../utils/DataStore'
 export struct HistoryView {
   @State historyList: HistoryRecord[] = []
   @State isLoading: boolean = true
+  @State groupedHistory: Map<string, HistoryRecord[]> = new Map()
 
   aboutToAppear() {
     this.loadHistory()
@@ -31,60 +32,57 @@ export struct HistoryView {
           .fontColor('#999999')
           .margin({ top: 40 })
       } else {
-        List({ space: 8 }) {
-          ForEach(this.historyList, (item: HistoryRecord) => {
+        List({ space: 0 }) {
+          ForEach(this.getSortedDates(), (date: string, dateIndex: number) => {
             ListItem() {
-              Column({ space: 4 }) {
-                Text(item.date)
-                  .fontSize(12)
-                  .fontColor('#999999')
-
-                Text(item.currency + ' ' + item.rate + ' ' + item.executeRate)
-                  .fontSize(13)
-                  .fontColor('#666666')
-
-                Row({ space: 8 }) {
-                  Text(item.price)
-                    .fontSize(14)
-                    .fontColor('#333333')
-                    .fontWeight(FontWeight.Medium)
-                  Text(item.factory)
-                    .fontSize(13)
-                    .fontColor('#666666')
-                  Text(item.packageType)
-                    .fontSize(13)
-                    .fontColor('#666666')
-                }
-
-                Row({ space: 8 }) {
-                  Text(item.quantity)
-                    .fontSize(13)
-                    .fontColor('#666666')
-                  Text('¥' + item.surcharge)
-                    .fontSize(13)
-                    .fontColor('#666666')
-                  Text('$' + item.freight)
-                    .fontSize(13)
-                    .fontColor('#666666')
-                }
-
-                Text('5个点: FOB ' + item.fobPrice + ', CIF ' + item.cifPrice + ', 利润 ' + item.profit)
+              Column({ space: 0 }) {
+                Text(date)
                   .fontSize(14)
-                  .fontColor('#007DFF')
-                  .fontWeight(FontWeight.Medium)
+                  .fontColor('#999999')
+                  .fontWeight(FontWeight.Bold)
+                  .width('100%')
+                  .padding({ left: 16, top: 8 })
+
+                ForEach(this.groupedHistory.get(date) || [], (item: HistoryRecord, index: number) => {
+                  Column({ space: 4 }) {
+                    Text(item.currency + ' ' + item.rate + ' ' + item.executeRate + ' ' + item.product + ' ' + item.price + ' ' + item.factory)
+                      .fontSize(13)
+                      .fontColor('#333333')
+                      .width('100%')
+
+                    Text(item.packageType + ' ' + item.quantity + ' ' + item.surcharge + ' ' + item.freight)
+                      .fontSize(13)
+                      .fontColor('#666666')
+                      .width('100%')
+
+                    Text(item.profitRate + '个点: FOB ' + item.fobPrice + ', CFR ' + item.cfrPrice + ', CIF ' + item.cifPrice + '，' + item.profit)
+                      .fontSize(14)
+                      .fontColor('#007DFF')
+                      .fontWeight(FontWeight.Medium)
+                      .width('100%')
+
+                    if (index < (this.groupedHistory.get(date) || []).length - 1) {
+                      Divider()
+                        .strokeWidth(0.5)
+                        .color('#EEEEEE')
+                        .margin({ top: 2, bottom: 0 })
+                    }
+                  }
+                  .width('100%')
+                  .padding({ left: 16, right: 16, top: 5, bottom: 5 })
+                  .backgroundColor(Color.White)
+                  .borderRadius(8)
+                  .shadow({ radius: 2, color: '#15000000', offsetY: 1 })
+                }, (item: HistoryRecord) => item.id)
               }
               .width('100%')
-              .padding(12)
-              .backgroundColor(Color.White)
-              .borderRadius(8)
-              .shadow({ radius: 2, color: '#15000000', offsetY: 1 })
+              .margin({ bottom: 8 })
             }
-            .swipeAction({ end: this.deleteEnd(item) })
-          }, (item: HistoryRecord) => item.id)
+          }, (date: string) => date)
         }
         .width('100%')
         .layoutWeight(1)
-        .padding({ left: 16, right: 16 })
+        .padding({ left: 0, right: 16 })
       }
     }
     .width('100%')
@@ -106,9 +104,31 @@ export struct HistoryView {
       })
   }
 
+  private getSortedDates(): string[] {
+    let dates: string[] = []
+    this.groupedHistory.forEach((value: HistoryRecord[], key: string) => {
+      dates.push(key)
+    })
+    return dates.sort((a: string, b: string) => b.localeCompare(a))
+  }
+
+  private groupByDate() {
+    this.groupedHistory = new Map()
+    for (let i = 0; i < this.historyList.length; i++) {
+      let record: HistoryRecord = this.historyList[i]
+      let date: string = record.date
+      if (this.groupedHistory.has(date)) {
+        this.groupedHistory.get(date)!.push(record)
+      } else {
+        this.groupedHistory.set(date, [record])
+      }
+    }
+  }
+
   private async loadHistory() {
     let store: DataStore = DataStore.getInstance()
     this.historyList = await store.getHistory()
+    this.groupByDate()
     this.isLoading = false
   }
 

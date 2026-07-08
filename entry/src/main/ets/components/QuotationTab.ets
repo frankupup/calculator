@@ -521,7 +521,7 @@ export struct QuotationTab {
       quantity: this.quantity,
       surcharge: this.surcharge,
       freight: this.freight,
-      profitRate: this.profitRate,
+      profitRate: mainResult.profitRate.toString(),
       fobPrice: mainResult.fobPrice.toString(),
       cfrPrice: mainResult.cfrPrice.toString(),
       cifPrice: mainResult.cifPrice.toString(),
