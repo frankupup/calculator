@@ -444,7 +444,7 @@ export struct QuotationTab {
     this.showDropdown = this.searchKeyword.length > 0
   }
 
-  private calculate() {
+  private async calculate() {
     let priceVal: number = parseFloat(this.price)
     let quantityVal: number = parseFloat(this.quantity)
     let surchargeVal: number = parseFloat(this.surcharge)
@@ -493,7 +493,7 @@ export struct QuotationTab {
 
     this.results = calcResults
     this.calcTimestamp = Date.now()
-    this.saveToHistory(calcResults)
+    await this.saveToHistory(calcResults)
   }
 
   private getRebateRate(): number {
