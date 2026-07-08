@@ -78,4 +78,5 @@ export class CalcResult {
   cfrPrice: number = 0
   cifPrice: number = 0
   profit: number = 0
+  profitRate: number = 0
 }

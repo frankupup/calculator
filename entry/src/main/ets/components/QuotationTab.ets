@@ -27,6 +27,7 @@ export struct QuotationTab {
   @State freight: string = ''
   @State profitRate: string = ''
   @State results: CalcResult[] = []
+  @State calcTimestamp: number = 0
   @State showPackageDropdown: boolean = false
   @State isSelectingPackage: boolean = false
   @State packageResults: QuotationRecord[] = []
@@ -34,8 +35,9 @@ export struct QuotationTab {
   private searchInputController: TextInputController = new TextInputController()
 
   build() {
-    Scroll() {
-      Column({ space: 12 }) {
+    Column() {
+      Scroll() {
+        Column({ space: 12 }) {
         Row({ space: 8 }) {
           Text(this.currency + ' Price ▼')
             .fontSize(20)
@@ -385,37 +387,42 @@ export struct QuotationTab {
           .onClick(() => {
             this.calculate()
           })
-
-        if (this.results.length > 0) {
-          Column({ space: 8 }) {
-            ForEach(this.results, (item: CalcResult, index: number) => {
-              Row({ space: 4 }) {
-                Text((3 + index).toString() + '个点:')
-                  .fontSize(14)
-                  .fontColor('#333333')
-                  .fontWeight(FontWeight.Medium)
-                Text('FOB ' + item.fobPrice.toString())
-                  .fontSize(14)
-                  .fontColor('#666666')
-                Text(', CIF ' + item.cifPrice.toString())
-                  .fontSize(14)
-                  .fontColor('#666666')
-                Text(', 利润 ' + item.profit.toString())
-                  .fontSize(14)
-                  .fontColor('#666666')
-              }
-              .width('100%')
-              .padding({ left: 16, right: 16 })
-            }, (item: CalcResult, index: number) => index.toString())
-          }
-          .width('100%')
-          .padding({ top: 8, bottom: 8 })
         }
+        .width('100%')
       }
+      .scrollable(ScrollDirection.Vertical)
+      .scrollBar(BarState.Off)
       .width('100%')
+      .layoutWeight(1)
+
+      if (this.results.length > 0) {
+        Column({ space: 8 }) {
+          ForEach(this.results, (item: CalcResult, index: number) => {
+            Row({ space: 4 }) {
+              Text(item.profitRate.toString() + '个点:')
+                .fontSize(14)
+                .fontColor('#333333')
+                .fontWeight(FontWeight.Medium)
+              Text('FOB ' + item.fobPrice.toString())
+                .fontSize(14)
+                .fontColor('#666666')
+              Text(', CFR ' + item.cfrPrice.toString())
+                .fontSize(14)
+                .fontColor('#666666')
+              Text(', CIF ' + item.cifPrice.toString())
+                .fontSize(14)
+                .fontColor('#666666')
+            }
+            .width('100%')
+            .padding({ left: 16, right: 16 })
+          }, (item: CalcResult, index: number) => `${item.profitRate}_${this.calcTimestamp}`)
+        }
+        .width('100%')
+        .padding({ top: 8, bottom: 8 })
+      }
     }
-    .scrollBar(BarState.Auto)
-    .edgeEffect(EdgeEffect.Spring)
+    .width('100%')
+    .height('100%')
   }
 
   private toggleCurrency() {
@@ -440,8 +447,9 @@ export struct QuotationTab {
     let surchargeVal: number = parseFloat(this.surcharge)
     let freightVal: number = parseFloat(this.freight)
     let execRate: number = parseFloat(this.executeRate)
+    let profitRateVal: number = parseFloat(this.profitRate)
 
-    if (isNaN(priceVal) || isNaN(quantityVal) || isNaN(freightVal) || isNaN(execRate)) {
+    if (isNaN(priceVal) || isNaN(quantityVal) || isNaN(freightVal) || isNaN(execRate) || isNaN(profitRateVal)) {
       return
     }
     if (isNaN(surchargeVal)) {
@@ -449,21 +457,29 @@ export struct QuotationTab {
     }
 
     let calcResults: CalcResult[] = []
-    let profitRates: number[] = [4, 5, 6]
-    let rebateRate: number = this.getRebateRate()
+    let profitRates: number[] = [profitRateVal - 1, profitRateVal, profitRateVal + 1]
+    // FOB = 价格/1.13/汇率 + 杂费/汇率/数量
+    let baseCost: number = priceVal / 1.13 / execRate + surchargeVal / execRate / quantityVal
 
     for (let i = 0; i < profitRates.length; i++) {
       let pr: number = profitRates[i]
-      let result: CalcResult
-      if (this.tabType === 'usd') {
-        result = PriceCalculator.calcUsd(priceVal, surchargeVal, quantityVal, freightVal, pr, execRate)
-      } else {
-        result = PriceCalculator.calcNormal(priceVal, rebateRate, surchargeVal, quantityVal, freightVal, pr, execRate)
-      }
+      // FOB = baseCost * (1 + 利润率/100), 向上取整
+      let fob: number = Math.ceil(baseCost * (1 + pr / 100))
+      // CFR = FOB + 运费/数量, 向上取整
+      let cfr: number = Math.ceil(fob + freightVal / quantityVal)
+      // CIF = CFR + CFR*1.1*0.0005/数量, 向上取整
+      let cif: number = Math.ceil(cfr + cfr * 1.1 * 0.0005 / quantityVal)
+      let result: CalcResult = new CalcResult()
+      result.fobPrice = fob
+      result.cfrPrice = cfr
+      result.cifPrice = cif
+      result.profit = fob - Math.ceil(baseCost)
+      result.profitRate = pr
       calcResults.push(result)
     }
 
     this.results = calcResults
+    this.calcTimestamp = Date.now()
     this.saveToHistory(calcResults)
   }
 
@@ -492,7 +508,7 @@ export struct QuotationTab {
       quantity: this.quantity,
       surcharge: this.surcharge,
       freight: this.freight,
-      profitRate: '5',
+      profitRate: this.profitRate,
       fobPrice: mainResult.fobPrice.toString(),
       cfrPrice: mainResult.cfrPrice.toString(),
       cifPrice: mainResult.cifPrice.toString(),
