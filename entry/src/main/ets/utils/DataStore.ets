@@ -31,6 +31,7 @@ export class DataStore {
       let record: HistoryRecord = {
         id: obj['id'] || '',
         tabType: obj['tabType'] || '',
+        label: obj['label'] || '',
         date: obj['date'] || '',
         rate: obj['rate'] || '',
         executeRate: obj['executeRate'] || '',

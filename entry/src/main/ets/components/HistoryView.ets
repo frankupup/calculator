@@ -45,6 +45,12 @@ export struct HistoryView {
 
                 ForEach(this.groupedHistory.get(date) || [], (item: HistoryRecord, index: number) => {
                   Column({ space: 4 }) {
+                    Text(item.label)
+                      .fontSize(13)
+                      .fontColor('#007DFF')
+                      .fontWeight(FontWeight.Medium)
+                      .width('100%')
+                      .margin({ top: 4 })
                     Text(item.currency + ' ' + item.rate + ' ' + item.executeRate + ' ' + item.product + ' ' + item.price + ' ' + item.factory)
                       .fontSize(13)
                       .fontColor('#333333')

@@ -506,9 +506,11 @@ export struct QuotationTab {
   private async saveToHistory(calcResults: CalcResult[]) {
     let store: DataStore = DataStore.getInstance()
     let mainResult: CalcResult = calcResults.length > 1 ? calcResults[1] : calcResults[0]
+    let label: string = this.getTabLabel()
     let record: HistoryRecord = {
       id: Date.now().toString(),
       tabType: this.tabType,
+      label: label,
       date: this.rateDate,
       rate: this.rate,
       executeRate: this.executeRate,
@@ -528,5 +530,18 @@ export struct QuotationTab {
       profit: mainResult.profit.toString()
     }
     await store.saveHistory(record)
+  }
+
+  private getTabLabel(): string {
+    if (this.tabType === 'normal') {
+      return '正常报价：'
+    } else if (this.tabType === 'zeroRebate') {
+      return '0退税：'
+    } else if (this.tabType === 'usd') {
+      return '美元报价：'
+    } else if (this.tabType === 'rmb') {
+      return '人民币报价：'
+    }
+    return ''
   }
 }

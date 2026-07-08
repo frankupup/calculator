@@ -10,6 +10,7 @@ export interface QuotationRecord {
 export interface HistoryRecord {
   id: string
   tabType: string
+  label: string
   date: string
   rate: string
   executeRate: string
