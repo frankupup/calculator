@@ -80,37 +80,54 @@ export struct QuotationTab {
         .padding({ left: 16, right: 16 })
 
         Column() {
-          TextInput({ text: this.searchKeyword, placeholder: '搜索产品', controller: this.searchInputController })
-            .fontSize(14)
-            .height(40)
-            .padding({ left: 12, right: 12 })
-            .border({ width: 1, color: '#CCCCCC', radius: 8 })
-            .onChange((value: string) => {
-              this.searchKeyword = value
-              this.product = value
-              if (this.isFillingData) {
-                this.isFillingData = false
-                return
-              }
-              if (this.searchKeyword.length === 0) {
-                this.showAllProducts()
-              } else {
-                this.doSearch()
-              }
-            })
-            .onFocus(() => {
-              if (this.searchKeyword.length > 0) {
-                this.doSearch()
-              } else {
-                this.showAllProducts()
-              }
-            })
-            .onBlur(() => {
-              if (!this.isSelecting) {
-                this.showDropdown = false
-              }
-            })
-            .width('100%')
+          Stack({ alignContent: Alignment.End }) {
+            TextInput({ text: this.searchKeyword, placeholder: '搜索产品', controller: this.searchInputController })
+              .fontSize(14)
+              .height(40)
+              .padding({ left: 12, right: 32 })
+              .border({ width: 1, color: '#CCCCCC', radius: 8 })
+              .onChange((value: string) => {
+                this.searchKeyword = value
+                this.product = value
+                if (this.isFillingData) {
+                  this.isFillingData = false
+                  return
+                }
+                if (this.searchKeyword.length === 0) {
+                  this.showAllProducts()
+                } else {
+                  this.doSearch()
+                }
+              })
+              .onFocus(() => {
+                if (this.searchKeyword.length > 0) {
+                  this.doSearch()
+                } else {
+                  this.showAllProducts()
+                }
+              })
+              .onBlur(() => {
+                if (!this.isSelecting) {
+                  this.showDropdown = false
+                }
+              })
+              .width('100%')
+
+            if (this.searchKeyword.length > 0) {
+              Text('✕')
+                .fontSize(14)
+                .fontColor('#999999')
+                .width(28)
+                .height(40)
+                .textAlign(TextAlign.Center)
+                .onClick(() => {
+                  this.searchKeyword = ''
+                  this.product = ''
+                  this.showDropdown = false
+                })
+            }
+          }
+          .width('100%')
 
           if (this.showDropdown && this.searchResults.length > 0) {
             List({ space: 0 }) {
@@ -169,15 +186,29 @@ export struct QuotationTab {
             Text('价格')
               .fontSize(12)
               .fontColor('#999999')
-            TextInput({ text: this.price, placeholder: '价格' })
-              .type(InputType.NUMBER_DECIMAL)
-              .fontSize(14)
-              .height(40)
-              .padding({ left: 4, right: 4 })
-              .border({ width: 1, color: '#CCCCCC', radius: 4 })
-              .onChange((value: string) => {
-                this.price = value
-              })
+            Stack({ alignContent: Alignment.End }) {
+              TextInput({ text: this.price, placeholder: '价格' })
+                .type(InputType.NUMBER_DECIMAL)
+                .fontSize(14)
+                .height(40)
+                .padding({ left: 4, right: 28 })
+                .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                .onChange((value: string) => {
+                  this.price = value
+                })
+              if (this.price.length > 0) {
+                Text('✕')
+                  .fontSize(14)
+                  .fontColor('#999999')
+                  .width(24)
+                  .height(40)
+                  .textAlign(TextAlign.Center)
+                  .onClick(() => {
+                    this.price = ''
+                  })
+              }
+            }
+            .width('100%')
           }
           .layoutWeight(1)
 
@@ -306,15 +337,29 @@ export struct QuotationTab {
             Text('数量')
               .fontSize(12)
               .fontColor('#999999')
-            TextInput({ text: this.quantity, placeholder: '数量' })
-              .type(InputType.NUMBER_DECIMAL)
-              .fontSize(14)
-              .height(40)
-              .padding({ left: 4, right: 4 })
-              .border({ width: 1, color: '#CCCCCC', radius: 4 })
-              .onChange((value: string) => {
-                this.quantity = value
-              })
+            Stack({ alignContent: Alignment.End }) {
+              TextInput({ text: this.quantity, placeholder: '数量' })
+                .type(InputType.NUMBER_DECIMAL)
+                .fontSize(14)
+                .height(40)
+                .padding({ left: 4, right: 28 })
+                .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                .onChange((value: string) => {
+                  this.quantity = value
+                })
+              if (this.quantity.length > 0) {
+                Text('✕')
+                  .fontSize(14)
+                  .fontColor('#999999')
+                  .width(24)
+                  .height(40)
+                  .textAlign(TextAlign.Center)
+                  .onClick(() => {
+                    this.quantity = ''
+                  })
+              }
+            }
+            .width('100%')
           }
           .layoutWeight(1)
 
@@ -322,15 +367,29 @@ export struct QuotationTab {
             Text('杂费')
               .fontSize(12)
               .fontColor('#999999')
-            TextInput({ text: this.surcharge, placeholder: '杂费' })
-              .type(InputType.NUMBER_DECIMAL)
-              .fontSize(14)
-              .height(40)
-              .padding({ left: 4, right: 4 })
-              .border({ width: 1, color: '#CCCCCC', radius: 4 })
-              .onChange((value: string) => {
-                this.surcharge = value
-              })
+            Stack({ alignContent: Alignment.End }) {
+              TextInput({ text: this.surcharge, placeholder: '杂费' })
+                .type(InputType.NUMBER_DECIMAL)
+                .fontSize(14)
+                .height(40)
+                .padding({ left: 4, right: 28 })
+                .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                .onChange((value: string) => {
+                  this.surcharge = value
+                })
+              if (this.surcharge.length > 0) {
+                Text('✕')
+                  .fontSize(14)
+                  .fontColor('#999999')
+                  .width(24)
+                  .height(40)
+                  .textAlign(TextAlign.Center)
+                  .onClick(() => {
+                    this.surcharge = ''
+                  })
+              }
+            }
+            .width('100%')
           }
           .layoutWeight(1)
         }
@@ -342,15 +401,29 @@ export struct QuotationTab {
             Text('运费')
               .fontSize(12)
               .fontColor('#999999')
-            TextInput({ text: this.freight, placeholder: this.currency === CurrencyType.USD ? 'USD' : 'EURO' })
-              .type(InputType.NUMBER_DECIMAL)
-              .fontSize(14)
-              .height(40)
-              .padding({ left: 4, right: 4 })
-              .border({ width: 1, color: '#CCCCCC', radius: 4 })
-              .onChange((value: string) => {
-                this.freight = value
-              })
+            Stack({ alignContent: Alignment.End }) {
+              TextInput({ text: this.freight, placeholder: this.currency === CurrencyType.USD ? 'USD' : 'EURO' })
+                .type(InputType.NUMBER_DECIMAL)
+                .fontSize(14)
+                .height(40)
+                .padding({ left: 4, right: 28 })
+                .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                .onChange((value: string) => {
+                  this.freight = value
+                })
+              if (this.freight.length > 0) {
+                Text('✕')
+                  .fontSize(14)
+                  .fontColor('#999999')
+                  .width(24)
+                  .height(40)
+                  .textAlign(TextAlign.Center)
+                  .onClick(() => {
+                    this.freight = ''
+                  })
+              }
+            }
+            .width('100%')
           }
           .layoutWeight(1)
 
@@ -358,15 +431,29 @@ export struct QuotationTab {
             Text('利润率')
               .fontSize(12)
               .fontColor('#999999')
-            TextInput({ text: this.profitRate, placeholder: '%' })
-              .type(InputType.NUMBER_DECIMAL)
-              .fontSize(14)
-              .height(40)
-              .padding({ left: 4, right: 4 })
-              .border({ width: 1, color: '#CCCCCC', radius: 4 })
-              .onChange((value: string) => {
-                this.profitRate = value
-              })
+            Stack({ alignContent: Alignment.End }) {
+              TextInput({ text: this.profitRate, placeholder: '%' })
+                .type(InputType.NUMBER_DECIMAL)
+                .fontSize(14)
+                .height(40)
+                .padding({ left: 4, right: 28 })
+                .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                .onChange((value: string) => {
+                  this.profitRate = value
+                })
+              if (this.profitRate.length > 0) {
+                Text('✕')
+                  .fontSize(14)
+                  .fontColor('#999999')
+                  .width(24)
+                  .height(40)
+                  .textAlign(TextAlign.Center)
+                  .onClick(() => {
+                    this.profitRate = ''
+                  })
+              }
+            }
+            .width('100%')
           }
           .layoutWeight(1)
         }
