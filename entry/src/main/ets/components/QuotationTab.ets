@@ -72,7 +72,7 @@ export struct QuotationTab {
               .fontColor('#999999')
               .margin({ left: 8 })
             TextInput({ text: this.executeRate, placeholder: '汇率' })
-              .type(InputType.Normal)
+              .type(InputType.NUMBER_DECIMAL)
               .fontSize(14)
               .width(80)
               .height(32)
