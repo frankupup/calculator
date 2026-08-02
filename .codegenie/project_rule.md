@@ -1,0 +1,1 @@
+没有我的明确指令，不许做git commit和push

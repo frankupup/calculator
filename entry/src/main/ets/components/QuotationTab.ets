@@ -51,32 +51,32 @@ export struct QuotationTab {
   // 自定义数字键盘 Builder
   @Builder
   executeRateKeyboard() {
-    CustomNumericKeyboard({ inputValue: $executeRate })
+    CustomNumericKeyboard({ inputValue: $executeRate, controller: this.executeRateController })
   }
 
   @Builder
   priceKeyboard() {
-    CustomNumericKeyboard({ inputValue: $price })
+    CustomNumericKeyboard({ inputValue: $price, controller: this.priceController })
   }
 
   @Builder
   quantityKeyboard() {
-    CustomNumericKeyboard({ inputValue: $quantity })
+    CustomNumericKeyboard({ inputValue: $quantity, controller: this.quantityController })
   }
 
   @Builder
   surchargeKeyboard() {
-    CustomNumericKeyboard({ inputValue: $surcharge })
+    CustomNumericKeyboard({ inputValue: $surcharge, controller: this.surchargeController })
   }
 
   @Builder
   freightKeyboard() {
-    CustomNumericKeyboard({ inputValue: $freight })
+    CustomNumericKeyboard({ inputValue: $freight, controller: this.freightController })
   }
 
   @Builder
   profitRateKeyboard() {
-    CustomNumericKeyboard({ inputValue: $profitRate })
+    CustomNumericKeyboard({ inputValue: $profitRate, controller: this.profitRateController })
   }
 
   build() {

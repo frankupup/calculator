@@ -17,6 +17,24 @@ export struct CustomNumericKeyboard {
   
   build() {
     Column() {
+      // 收起键盘按钮（朝下的箭头）
+      Row() {
+        Text('▼')
+          .fontSize(20)
+          .fontColor('#666666')
+          .padding(8)
+      }
+      .width('100%')
+      .height(40)
+      .justifyContent(FlexAlign.Center)
+      .backgroundColor('#F5F5F5')
+      .onClick(() => {
+        // 收起键盘
+        if (this.controller) {
+          this.controller.stopEditing()
+        }
+      })
+      
       // 键盘主体
       Column() {
         ForEach(this.keyLayout, (row: string[], rowIndex: number) => {
