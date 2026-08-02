@@ -559,44 +559,46 @@ export struct QuotationTab {
           .onClick(() => {
             this.calculate()
           })
-        }
-        .width('100%')
-      }
-      .scrollable(ScrollDirection.Vertical)
-      .scrollBar(BarState.Off)
-      .width('100%')
-      .layoutWeight(1)
-      .translate({ y: this.contentOffsetY })
-      .animation({ duration: 250, curve: Curve.EaseInOut })
 
-      if (this.results.length > 0) {
-        Column({ space: 8 }) {
-          ForEach(this.results, (item: CalcResult, index: number) => {
-            Row({ space: 4 }) {
-              Text(item.profitRate.toString() + '个点:')
-                .fontSize(14)
-                .fontColor('#333333')
-                .fontWeight(FontWeight.Medium)
-              Text('FOB ' + item.fobPrice.toString())
-                .fontSize(14)
-                .fontColor('#666666')
-              Text(', CFR ' + item.cfrPrice.toString())
-                .fontSize(14)
-                .fontColor('#666666')
-              Text(', CIF ' + item.cifPrice.toString())
+        // 计算结果显示（在计算按钮下方40px开始）
+        if (this.results.length > 0) {
+          Column({ space: 8 }) {
+            ForEach(this.results, (item: CalcResult, index: number) => {
+              Row({ space: 4 }) {
+                Text(item.profitRate.toString() + '个点:')
+                  .fontSize(14)
+                  .fontColor('#333333')
+                  .fontWeight(FontWeight.Medium)
+                Text('FOB ' + item.fobPrice.toString())
+                  .fontSize(14)
+                  .fontColor('#666666')
+                Text(', CFR ' + item.cfrPrice.toString())
+                  .fontSize(14)
+                  .fontColor('#666666')
+                Text(', CIF ' + item.cifPrice.toString())
                   .fontSize(14)
                   .fontColor('#666666')
                 Text(', ' + item.profit.toString())
                   .fontSize(14)
                   .fontColor('#666666')
-            }
-            .width('100%')
-            .padding({ left: 16, right: 16 })
-          }, (item: CalcResult, index: number) => `${item.profitRate}_${this.calcTimestamp}`)
+              }
+              .width('100%')
+              .padding({ left: 16, right: 16 })
+            }, (item: CalcResult, index: number) => `${item.profitRate}_${this.calcTimestamp}`)
+          }
+          .width('100%')
+          .margin({ top: 40 })
         }
-        .width('100%')
-        .padding({ top: 8, bottom: 8 })
       }
+      .width('100%')
+    }
+    .scrollable(ScrollDirection.Vertical)
+    .scrollBar(BarState.Off)
+    .width('100%')
+    .layoutWeight(1)
+    .align(Alignment.TopStart)
+    .translate({ y: this.contentOffsetY })
+    .animation({ duration: 250, curve: Curve.EaseInOut })
     }
     .width('100%')
     .height('100%')
@@ -667,6 +669,12 @@ export struct QuotationTab {
 
     this.results = calcResults
     this.calcTimestamp = Date.now()
+    
+    // 关闭所有下拉框，重置Scroll位置
+    this.showDropdown = false
+    this.showPackageDropdown = false
+    this.contentOffsetY = 0
+    
     await this.saveToHistory(calcResults)
   }
 
