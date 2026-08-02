@@ -55,10 +55,23 @@ export struct HistoryView {
 
                 ForEach(this.groupedHistory.get(date) || [], (item: HistoryRecord, index: number) => {
                   Column({ space: 4 }) {
-                    Text(item.label)
-                      .fontSize(15)
-                      .fontColor('#007DFF')
-                      .fontWeight(FontWeight.Medium)
+                    Row() {
+                      Text(item.label)
+                        .fontSize(15)
+                        .fontColor('#007DFF')
+                        .fontWeight(FontWeight.Medium)
+                        .layoutWeight(1)
+                      
+                      Text('×')
+                        .fontSize(18)
+                        .fontColor('#999999')
+                        .width(24)
+                        .height(24)
+                        .textAlign(TextAlign.Center)
+                        .onClick(() => {
+                          this.deleteItem(item.id)
+                        })
+                    }
                       .width('100%')
                       .margin({ top: 4 })
                     Text() {
