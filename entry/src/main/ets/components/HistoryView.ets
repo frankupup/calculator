@@ -71,7 +71,7 @@ export struct HistoryView {
                       .fontColor('#666666')
                       .width('100%')
 
-                    Text(item.profitRate + '个点: FOB ' + item.fobPrice + ', CFR ' + item.cfrPrice + ', CIF ' + item.cifPrice + '，' + item.profit + ', ' + item.currency + '/MT')
+                    Text(item.profitRate + '个点: FOB ' + item.fobPrice + ', CFR ' + item.cfrPrice + ', CIF ' + item.cifPrice + '，' + item.profit + ', ' + (item.currency === '美元' ? 'USD/MT' : 'EURO/MT'))
                       .fontSize(13)
                       .fontColor('#333333')
                       .fontWeight(FontWeight.Medium)
