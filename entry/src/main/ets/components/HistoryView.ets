@@ -1,7 +1,7 @@
 import { HistoryRecord } from '../model/QuotationData'
 import { DataStore } from '../utils/DataStore'
 import { onHistoryChanged, offHistoryChanged } from '../constants/Events'
-import { HdsNavigation, HdsNavigationTitleMode, ScrollEffectType, hdsMaterial } from '@kit.UIDesignKit'
+import { HdsNavigation, HdsNavigationTitleMode, ScrollEffectType, hdsMaterial, BlurStrategy } from '@kit.UIDesignKit'
 import { LengthMetrics } from '@kit.ArkUI'
 
 @Component
@@ -143,6 +143,17 @@ export struct HistoryView {
           scrollEffectType: ScrollEffectType.COMMON_BLUR,
           blurEffectiveStartOffset: LengthMetrics.vp(0),
           blurEffectiveEndOffset: LengthMetrics.vp(20)
+        },
+        blurStrategy: BlurStrategy.ADAPTIVE,
+        originalStyle: {
+          backgroundStyle: {
+            backgroundColor: '#00ffffff'
+          }
+        },
+        scrollEffectStyle: {
+          backgroundStyle: {
+            backgroundColor: '#00ffffff'
+          }
         },
         systemMaterialEffect: {
           materialType: hdsMaterial.MaterialType.ADAPTIVE,
