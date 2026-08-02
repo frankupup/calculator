@@ -4,6 +4,7 @@ import { HistoryView } from '../components/HistoryView'
 import { ExchangeRateFetcher, RateInfo } from '../utils/ExchangeRateFetcher'
 import { QuotationRepository } from '../utils/QuotationRepository'
 import { DataStore } from '../utils/DataStore'
+import { hdsMaterial, HdsTabs, HdsTabsController } from '@kit.UIDesignKit'
 
 @Entry
 @Component
@@ -32,7 +33,7 @@ struct Index {
 
   build() {
     Column() {
-      Tabs({ barPosition: BarPosition.End, index: this.currentIndex }) {
+      HdsTabs({ barPosition: BarPosition.End, index: this.currentIndex }) {
         TabContent() {
           QuotationTab({
             tabType: TabType.NORMAL,
@@ -84,6 +85,12 @@ struct Index {
       }
       .scrollable(true)
       .barMode(BarMode.Scrollable)
+      .barFloatingStyle({
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
+      })
       .onChange((index: number) => {
         this.currentIndex = index
         if (index < 4) {
