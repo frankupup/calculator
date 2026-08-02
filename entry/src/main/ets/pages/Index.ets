@@ -85,7 +85,10 @@ struct Index {
       }
       .scrollable(true)
       .barMode(BarMode.Scrollable)
+      .barOverlap(true)
+      .barBackgroundBlurStyle(BlurStyle.Thin)
       .barFloatingStyle({
+        barBottomMargin: 28,
         systemMaterialEffect: {
           materialType: hdsMaterial.MaterialType.ADAPTIVE,
           materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
