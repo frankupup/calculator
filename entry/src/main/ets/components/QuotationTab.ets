@@ -4,6 +4,7 @@ import { CalcResult, PriceCalculator } from '../utils/PriceCalculator'
 import { HistoryRecord } from '../model/QuotationData'
 import { DataStore } from '../utils/DataStore'
 import { CurrencyType } from '../constants/Constants'
+import { CustomNumericKeyboard } from './CustomNumericKeyboard'
 
 @Component
 export struct QuotationTab {
@@ -38,7 +39,45 @@ export struct QuotationTab {
   private packageInputController: TextInputController = new TextInputController()
   private containerInputController: TextInputController = new TextInputController()
   private searchInputController: TextInputController = new TextInputController()
+  // 数字输入框控制器
+  private executeRateController: TextInputController = new TextInputController()
+  private priceController: TextInputController = new TextInputController()
+  private quantityController: TextInputController = new TextInputController()
+  private surchargeController: TextInputController = new TextInputController()
+  private freightController: TextInputController = new TextInputController()
+  private profitRateController: TextInputController = new TextInputController()
   private scroller: Scroller = new Scroller()
+
+  // 自定义数字键盘 Builder
+  @Builder
+  executeRateKeyboard() {
+    CustomNumericKeyboard({ inputValue: $executeRate })
+  }
+
+  @Builder
+  priceKeyboard() {
+    CustomNumericKeyboard({ inputValue: $price })
+  }
+
+  @Builder
+  quantityKeyboard() {
+    CustomNumericKeyboard({ inputValue: $quantity })
+  }
+
+  @Builder
+  surchargeKeyboard() {
+    CustomNumericKeyboard({ inputValue: $surcharge })
+  }
+
+  @Builder
+  freightKeyboard() {
+    CustomNumericKeyboard({ inputValue: $freight })
+  }
+
+  @Builder
+  profitRateKeyboard() {
+    CustomNumericKeyboard({ inputValue: $profitRate })
+  }
 
   build() {
     Column() {
@@ -71,7 +110,7 @@ export struct QuotationTab {
               .fontSize(13)
               .fontColor('#999999')
               .margin({ left: 8 })
-            TextInput({ text: this.executeRate, placeholder: '汇率' })
+            TextInput({ text: this.executeRate, placeholder: '汇率', controller: this.executeRateController })
               .type(InputType.NUMBER_DECIMAL)
               .fontSize(14)
               .width(80)
@@ -81,6 +120,7 @@ export struct QuotationTab {
               .onChange((value: string) => {
                 this.executeRate = value
               })
+              .customKeyboard(this.executeRateKeyboard())
           }
           .width('100%')
           .padding({ left: 16, right: 16 })
@@ -193,7 +233,7 @@ export struct QuotationTab {
                 .fontSize(12)
                 .fontColor('#999999')
               Stack({ alignContent: Alignment.End }) {
-                TextInput({ text: this.price, placeholder: '价格' })
+                TextInput({ text: this.price, placeholder: '价格', controller: this.priceController })
                   .type(InputType.NUMBER_DECIMAL)
                   .fontSize(14)
                   .height(40)
@@ -202,6 +242,7 @@ export struct QuotationTab {
                   .onChange((value: string) => {
                     this.price = value
                   })
+                  .customKeyboard(this.priceKeyboard())
                 if (this.price.length > 0) {
                   Text('✕')
                     .fontSize(14)
@@ -423,7 +464,7 @@ export struct QuotationTab {
                 .fontSize(12)
                 .fontColor('#999999')
               Stack({ alignContent: Alignment.End }) {
-                TextInput({ text: this.quantity, placeholder: '数量' })
+                TextInput({ text: this.quantity, placeholder: '数量', controller: this.quantityController })
                   .type(InputType.NUMBER_DECIMAL)
                   .fontSize(14)
                   .height(40)
@@ -432,6 +473,7 @@ export struct QuotationTab {
                   .onChange((value: string) => {
                     this.quantity = value
                   })
+                  .customKeyboard(this.quantityKeyboard())
                 if (this.quantity.length > 0) {
                   Text('✕')
                     .fontSize(14)
@@ -453,7 +495,7 @@ export struct QuotationTab {
                 .fontSize(12)
                 .fontColor('#999999')
               Stack({ alignContent: Alignment.End }) {
-                TextInput({ text: this.surcharge, placeholder: '杂费' })
+                TextInput({ text: this.surcharge, placeholder: '杂费', controller: this.surchargeController })
                   .type(InputType.NUMBER_DECIMAL)
                   .fontSize(14)
                   .height(40)
@@ -462,6 +504,7 @@ export struct QuotationTab {
                   .onChange((value: string) => {
                     this.surcharge = value
                   })
+                  .customKeyboard(this.surchargeKeyboard())
                 if (this.surcharge.length > 0) {
                   Text('✕')
                     .fontSize(14)
@@ -487,7 +530,7 @@ export struct QuotationTab {
               .fontSize(12)
               .fontColor('#999999')
             Stack({ alignContent: Alignment.End }) {
-              TextInput({ text: this.freight, placeholder: this.currency === CurrencyType.USD ? 'USD' : 'EURO' })
+              TextInput({ text: this.freight, placeholder: this.currency === CurrencyType.USD ? 'USD' : 'EURO', controller: this.freightController })
                 .type(InputType.NUMBER_DECIMAL)
                 .fontSize(14)
                 .height(40)
@@ -496,6 +539,7 @@ export struct QuotationTab {
                 .onChange((value: string) => {
                   this.freight = value
                 })
+                .customKeyboard(this.freightKeyboard())
               if (this.freight.length > 0) {
                 Text('✕')
                   .fontSize(14)
@@ -517,7 +561,7 @@ export struct QuotationTab {
               .fontSize(12)
               .fontColor('#999999')
             Stack({ alignContent: Alignment.End }) {
-              TextInput({ text: this.profitRate, placeholder: '%' })
+              TextInput({ text: this.profitRate, placeholder: '%', controller: this.profitRateController })
                 .type(InputType.NUMBER_DECIMAL)
                 .fontSize(14)
                 .height(40)
@@ -526,6 +570,7 @@ export struct QuotationTab {
                 .onChange((value: string) => {
                   this.profitRate = value
                 })
+                .customKeyboard(this.profitRateKeyboard())
               if (this.profitRate.length > 0) {
                 Text('✕')
                   .fontSize(14)
@@ -621,6 +666,14 @@ export struct QuotationTab {
   }
 
   private async calculate() {
+    // 收起所有自定义键盘
+    this.executeRateController.stopEditing()
+    this.priceController.stopEditing()
+    this.quantityController.stopEditing()
+    this.surchargeController.stopEditing()
+    this.freightController.stopEditing()
+    this.profitRateController.stopEditing()
+    
     let priceVal: number = parseFloat(this.price)
     let quantityVal: number = parseFloat(this.quantity)
     let surchargeVal: number = parseFloat(this.surcharge)
