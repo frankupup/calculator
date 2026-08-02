@@ -30,7 +30,7 @@ struct Index {
       .fontSize(15)
       .fontWeight(this.currentIndex === index ? FontWeight.Medium : FontWeight.Normal)
       .fontColor(this.currentIndex === index ? '#007DFF' : '#999999')
-      .padding({ left: 8, right: 8 })
+      .padding({ right: 6 })
   }
 
   async aboutToAppear() {
