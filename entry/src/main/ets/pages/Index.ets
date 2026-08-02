@@ -30,7 +30,7 @@ struct Index {
       .fontSize(15)
       .fontWeight(this.currentIndex === index ? FontWeight.Medium : FontWeight.Normal)
       .fontColor(this.currentIndex === index ? '#007DFF' : '#999999')
-      .padding({ right: 6 })
+      .padding({ right: 12 })
   }
 
   async aboutToAppear() {
@@ -52,7 +52,7 @@ struct Index {
             executeRate: $executeRateNormal
           })
         }
-        .tabBar(this.customTabBarBuilder(0, '正常报价'))
+        .tabBar(this.customTabBarBuilder(0, '正常'))
 
         TabContent() {
           QuotationTab({
@@ -74,7 +74,7 @@ struct Index {
             executeRate: $executeRateUsd
           })
         }
-        .tabBar(this.customTabBarBuilder(2, '美元报价'))
+        .tabBar(this.customTabBarBuilder(2, '美元'))
 
         TabContent() {
           QuotationTab({
@@ -85,7 +85,7 @@ struct Index {
             executeRate: $executeRateRmb
           })
         }
-        .tabBar(this.customTabBarBuilder(3, '人民币报价'))
+        .tabBar(this.customTabBarBuilder(3, '人民币'))
 
         TabContent() {
           HistoryView()
