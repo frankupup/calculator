@@ -16,43 +16,52 @@ export class DataStore {
   }
 
   async init(context: Context): Promise<void> {
-    this.prefs = await preferences.getPreferences(context, STORE_NAME)
+    try {
+      this.prefs = await preferences.getPreferences(context, STORE_NAME)
+    } catch (error) {
+      console.error('DataStore init failed:', error)
+    }
   }
 
   async getHistory(): Promise<HistoryRecord[]> {
     if (this.prefs === null) {
       return []
     }
-    let jsonStr: string = await this.prefs.get('history', '[]') as string
-    let arr: Object[] = JSON.parse(jsonStr) as Object[]
-    let records: HistoryRecord[] = []
-    for (let i = 0; i < arr.length; i++) {
-      let obj: Record<string, string> = arr[i] as Record<string, string>
-      let record: HistoryRecord = {
-        id: obj['id'] || '',
-        tabType: obj['tabType'] || '',
-        label: obj['label'] || '',
-        date: obj['date'] || '',
-        rate: obj['rate'] || '',
-        executeRate: obj['executeRate'] || '',
-        currency: obj['currency'] || '',
-        product: obj['product'] || '',
-        price: obj['price'] || '',
-        factory: obj['factory'] || '',
-        packageType: obj['packageType'] || '',
-        containerType: obj['containerType'] || '',
-        quantity: obj['quantity'] || '',
-        surcharge: obj['surcharge'] || '',
-        freight: obj['freight'] || '',
-        profitRate: obj['profitRate'] || '',
-        fobPrice: obj['fobPrice'] || '',
-        cfrPrice: obj['cfrPrice'] || '',
-        cifPrice: obj['cifPrice'] || '',
-        profit: obj['profit'] || ''
+    try {
+      let jsonStr: string = await this.prefs.get('history', '[]') as string
+      let arr: Object[] = JSON.parse(jsonStr) as Object[]
+      let records: HistoryRecord[] = []
+      for (let i = 0; i < arr.length; i++) {
+        let obj: Record<string, string> = arr[i] as Record<string, string>
+        let record: HistoryRecord = {
+          id: obj['id'] || '',
+          tabType: obj['tabType'] || '',
+          label: obj['label'] || '',
+          date: obj['date'] || '',
+          rate: obj['rate'] || '',
+          executeRate: obj['executeRate'] || '',
+          currency: obj['currency'] || '',
+          product: obj['product'] || '',
+          price: obj['price'] || '',
+          factory: obj['factory'] || '',
+          packageType: obj['packageType'] || '',
+          containerType: obj['containerType'] || '',
+          quantity: obj['quantity'] || '',
+          surcharge: obj['surcharge'] || '',
+          freight: obj['freight'] || '',
+          profitRate: obj['profitRate'] || '',
+          fobPrice: obj['fobPrice'] || '',
+          cfrPrice: obj['cfrPrice'] || '',
+          cifPrice: obj['cifPrice'] || '',
+          profit: obj['profit'] || ''
+        }
+        records.push(record)
       }
-      records.push(record)
+      return records
+    } catch (error) {
+      console.error('DataStore getHistory failed:', error)
+      return []
     }
-    return records
   }
 
   async saveHistory(record: HistoryRecord): Promise<void> {
@@ -65,8 +74,12 @@ export class DataStore {
       records = records.slice(0, 200)
     }
     let jsonStr: string = JSON.stringify(records)
-    await this.prefs.put('history', jsonStr)
-    await this.prefs.flush()
+    try {
+      await this.prefs.put('history', jsonStr)
+      await this.prefs.flush()
+    } catch (error) {
+      console.error('DataStore saveHistory failed:', error)
+    }
   }
 
   async deleteHistory(id: string): Promise<void> {
@@ -81,7 +94,11 @@ export class DataStore {
       }
     }
     let jsonStr: string = JSON.stringify(filtered)
-    await this.prefs.put('history', jsonStr)
-    await this.prefs.flush()
+    try {
+      await this.prefs.put('history', jsonStr)
+      await this.prefs.flush()
+    } catch (error) {
+      console.error('DataStore deleteHistory failed:', error)
+    }
   }
 }
