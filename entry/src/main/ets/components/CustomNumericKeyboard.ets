@@ -22,10 +22,10 @@ export struct CustomNumericKeyboard {
         Text('▼')
           .fontSize(20)
           .fontColor('#666666')
-          .padding(8)
+          .padding(3)
       }
       .width('100%')
-      .height(40)
+      .height(14)
       .justifyContent(FlexAlign.Center)
       .backgroundColor('#F5F5F5')
       .onClick(() => {
@@ -55,7 +55,7 @@ export struct CustomNumericKeyboard {
         })
       }
       .width('100%')
-      .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+      .padding({ left: 16, right: 16, top: 4, bottom: 12 })
       .backgroundColor('#F5F5F5')
     }
     .width('100%')
