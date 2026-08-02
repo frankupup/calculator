@@ -24,6 +24,14 @@ struct Index {
   @State executeRateRmb: string = '0'
   @State rateLoaded: boolean = false
 
+  @Builder
+  customTabBarBuilder(index: number, name: string) {
+    Text(name)
+      .fontSize(16)
+      .fontWeight(this.currentIndex === index ? FontWeight.Medium : FontWeight.Normal)
+      .fontColor(this.currentIndex === index ? '#007DFF' : '#999999')
+  }
+
   async aboutToAppear() {
     let context = this.getUIContext().getHostContext() as Context
     await DataStore.getInstance().init(context)
@@ -43,7 +51,7 @@ struct Index {
             executeRate: $executeRateNormal
           })
         }
-        .tabBar('正常报价')
+        .tabBar(this.customTabBarBuilder(0, '正常报价'))
 
         TabContent() {
           QuotationTab({
@@ -54,7 +62,7 @@ struct Index {
             executeRate: $executeRateZeroRebate
           })
         }
-        .tabBar('0退税')
+        .tabBar(this.customTabBarBuilder(1, '0退税'))
 
         TabContent() {
           QuotationTab({
@@ -65,7 +73,7 @@ struct Index {
             executeRate: $executeRateUsd
           })
         }
-        .tabBar('美元报价')
+        .tabBar(this.customTabBarBuilder(2, '美元报价'))
 
         TabContent() {
           QuotationTab({
@@ -76,12 +84,12 @@ struct Index {
             executeRate: $executeRateRmb
           })
         }
-        .tabBar('人民币报价')
+        .tabBar(this.customTabBarBuilder(3, '人民币报价'))
 
         TabContent() {
           HistoryView()
         }
-        .tabBar('历史')
+        .tabBar(this.customTabBarBuilder(4, '历史'))
       }
       .scrollable(true)
       .barMode(BarMode.Scrollable)
