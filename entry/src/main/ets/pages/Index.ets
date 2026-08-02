@@ -12,7 +12,11 @@ struct Index {
   @State @Watch('onCurrencyChange') currency: string = CurrencyType.USD
   @State rateDate: string = ''
   @State rate: string = '0'
-  @State executeRate: string = '0'
+  // 为每个tab维护独立的汇率状态
+  @State executeRateNormal: string = '0'
+  @State executeRateZeroRebate: string = '0'
+  @State executeRateUsd: string = '0'
+  @State executeRateRmb: string = '0'
   @State rateLoaded: boolean = false
 
   async aboutToAppear() {
@@ -31,7 +35,7 @@ struct Index {
             currency: $currency,
             rateDate: this.rateDate,
             rate: this.rate,
-            executeRate: $executeRate
+            executeRate: $executeRateNormal
           })
         }
         .tabBar('正常报价')
@@ -42,7 +46,7 @@ struct Index {
             currency: $currency,
             rateDate: this.rateDate,
             rate: this.rate,
-            executeRate: $executeRate
+            executeRate: $executeRateZeroRebate
           })
         }
         .tabBar('0退税')
@@ -53,7 +57,7 @@ struct Index {
             currency: $currency,
             rateDate: this.rateDate,
             rate: this.rate,
-            executeRate: $executeRate
+            executeRate: $executeRateUsd
           })
         }
         .tabBar('美元报价')
@@ -64,7 +68,7 @@ struct Index {
             currency: $currency,
             rateDate: this.rateDate,
             rate: this.rate,
-            executeRate: $executeRate
+            executeRate: $executeRateRmb
           })
         }
         .tabBar('人民币报价')
@@ -92,8 +96,12 @@ struct Index {
 
   private async fetchRate() {
     this.rateLoaded = false
-    // 如果执行汇率已经有值，则保留不变，不再重新获取
-    if (this.executeRate !== '0' && this.executeRate.length > 0) {
+    
+    // 获取当前tab的执行汇率
+    let currentExecuteRate: string = this.getCurrentExecuteRate()
+    
+    // 如果当前tab的执行汇率已经有值，则保留不变，不再重新获取
+    if (currentExecuteRate !== '0' && currentExecuteRate.length > 0) {
       this.rateLoaded = true
       return
     }
@@ -102,9 +110,44 @@ struct Index {
     if (info.date.length > 0) {
       this.rateDate = info.date
       this.rate = info.rate.toFixed(2)
-      this.executeRate = info.rate.toFixed(2)
+      // 更新当前tab的执行汇率
+      this.setCurrentExecuteRate(info.rate.toFixed(2))
     }
     this.rateLoaded = true
+  }
+  
+  // 获取当前tab的执行汇率
+  private getCurrentExecuteRate(): string {
+    switch (this.currentIndex) {
+      case 0:
+        return this.executeRateNormal
+      case 1:
+        return this.executeRateZeroRebate
+      case 2:
+        return this.executeRateUsd
+      case 3:
+        return this.executeRateRmb
+      default:
+        return '0'
+    }
+  }
+  
+  // 设置当前tab的执行汇率
+  private setCurrentExecuteRate(value: string) {
+    switch (this.currentIndex) {
+      case 0:
+        this.executeRateNormal = value
+        break
+      case 1:
+        this.executeRateZeroRebate = value
+        break
+      case 2:
+        this.executeRateUsd = value
+        break
+      case 3:
+        this.executeRateRmb = value
+        break
+    }
   }
 
   private onCurrencyChange() {
