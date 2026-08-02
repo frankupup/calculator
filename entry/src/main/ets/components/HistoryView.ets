@@ -56,14 +56,14 @@ export struct HistoryView {
                 ForEach(this.groupedHistory.get(date) || [], (item: HistoryRecord, index: number) => {
                   Column({ space: 4 }) {
                     Text(item.label)
-                      .fontSize(13)
+                      .fontSize(15)
                       .fontColor('#007DFF')
                       .fontWeight(FontWeight.Medium)
                       .width('100%')
                       .margin({ top: 4 })
                     Text(item.currency + ' ' + item.rate + ' ' + item.executeRate + ' ' + item.product + ' ' + item.price + ' ' + item.factory)
-                      .fontSize(14)
-                      .fontColor('#333333')
+                      .fontSize(13)
+                      .fontColor('#666666')
                       .width('100%')
 
                     Text(item.packageType + ' ' + item.quantity + ' ' + item.surcharge + ' ' + item.freight)
@@ -71,9 +71,9 @@ export struct HistoryView {
                       .fontColor('#666666')
                       .width('100%')
 
-                    Text(item.profitRate + '个点: FOB ' + item.fobPrice + ', CFR ' + item.cfrPrice + ', CIF ' + item.cifPrice + '，' + item.profit)
+                    Text(item.profitRate + '个点: FOB ' + item.fobPrice + ', CFR ' + item.cfrPrice + ', CIF ' + item.cifPrice + '，' + item.profit + ', ' + item.currency + '/MT')
                       .fontSize(13)
-                      .fontColor('#007DFF')
+                      .fontColor('#333333')
                       .fontWeight(FontWeight.Medium)
                       .width('100%')
 
