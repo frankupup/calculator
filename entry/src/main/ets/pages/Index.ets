@@ -92,6 +92,12 @@ struct Index {
 
   private async fetchRate() {
     this.rateLoaded = false
+    // 如果执行汇率已经有值，则保留不变，不再重新获取
+    if (this.executeRate !== '0' && this.executeRate.length > 0) {
+      this.rateLoaded = true
+      return
+    }
+    
     let info: RateInfo = await ExchangeRateFetcher.fetchRate(this.currency)
     if (info.date.length > 0) {
       this.rateDate = info.date
