@@ -31,370 +31,455 @@ export struct QuotationTab {
   @State showPackageDropdown: boolean = false
   @State isSelectingPackage: boolean = false
   @State packageResults: QuotationRecord[] = []
+  @State showContainerDropdown: boolean = false
+  @State isSelectingContainer: boolean = false
+  @State containerResults: QuotationRecord[] = []
+  @State contentOffsetY: number = 0
   private packageInputController: TextInputController = new TextInputController()
+  private containerInputController: TextInputController = new TextInputController()
   private searchInputController: TextInputController = new TextInputController()
+  private scroller: Scroller = new Scroller()
 
   build() {
     Column() {
-      Scroll() {
+      Scroll(this.scroller) {
         Column({ space: 12 }) {
-        Row({ space: 8 }) {
-          Text(this.currency + ' Price ▼')
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#333333')
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 8 })
-        .onClick(() => {
-          this.toggleCurrency()
-        })
-
-        Row({ space: 8 }) {
-          Text(this.rateDate)
-            .fontSize(14)
-            .fontColor('#666666')
-          Text(parseFloat(this.rate).toFixed(2))
-            .fontSize(14)
-            .fontColor('#333333')
-            .fontWeight(FontWeight.Medium)
-          Text(this.currency)
-            .fontSize(14)
-            .fontColor('#666666')
-          Text('执行汇率')
-            .fontSize(13)
-            .fontColor('#999999')
-            .margin({ left: 8 })
-          TextInput({ text: this.executeRate, placeholder: '汇率' })
-            .type(InputType.Normal)
-            .fontSize(14)
-            .width(80)
-            .height(32)
-            .padding({ left: 4, right: 4 })
-            .border({ width: 1, color: '#CCCCCC', radius: 4 })
-            .onChange((value: string) => {
-              this.executeRate = value
-            })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16 })
-
-        Column() {
-          Stack({ alignContent: Alignment.End }) {
-            TextInput({ text: this.searchKeyword, placeholder: '搜索产品', controller: this.searchInputController })
-              .fontSize(14)
-              .height(40)
-              .padding({ left: 12, right: 32 })
-              .border({ width: 1, color: '#CCCCCC', radius: 8 })
-              .onChange((value: string) => {
-                this.searchKeyword = value
-                this.product = value
-                if (this.isFillingData) {
-                  this.isFillingData = false
-                  return
-                }
-                if (this.searchKeyword.length === 0) {
-                  this.showAllProducts()
-                } else {
-                  this.doSearch()
-                }
-              })
-              .onFocus(() => {
-                if (this.searchKeyword.length > 0) {
-                  this.doSearch()
-                } else {
-                  this.showAllProducts()
-                }
-              })
-              .onBlur(() => {
-                if (!this.isSelecting) {
-                  this.showDropdown = false
-                }
-              })
-              .width('100%')
-
-            if (this.searchKeyword.length > 0) {
-              Text('✕')
-                .fontSize(14)
-                .fontColor('#999999')
-                .width(28)
-                .height(40)
-                .textAlign(TextAlign.Center)
-                .onClick(() => {
-                  this.searchKeyword = ''
-                  this.product = ''
-                  this.showDropdown = false
-                })
-            }
+          Row({ space: 8 }) {
+            Text(this.currency + ' Price ▼')
+              .fontSize(20)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#333333')
           }
           .width('100%')
+          .padding({ left: 16, right: 16, top: 8 })
+          .onClick(() => {
+            this.toggleCurrency()
+          })
 
-          if (this.showDropdown && this.searchResults.length > 0) {
-            List({ space: 0 }) {
-              ForEach(this.searchResults, (item: QuotationRecord, index: number) => {
-                ListItem() {
-                  Row() {
-                    Text(item.product)
-                      .fontSize(14)
-                      .fontColor('#333333')
-                      .fontWeight(FontWeight.Medium)
-                    Text(' ' + item.factory + ' | ' + item.packageType + ' | ' + item.containerType + ' | ' + item.quantity + ' | ' + item.surcharge)
-                      .fontSize(12)
-                      .fontColor('#999999')
-                  }
-                  .width('100%')
-                  .alignItems(VerticalAlign.Center)
-                  .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-                  .onTouch((event: TouchEvent) => {
-                    if (event.type === TouchType.Down) {
-                      this.isSelecting = true
-                    } else if (event.type === TouchType.Up) {
-                      this.product = item.product
-                      this.factory = item.factory
-                      this.packageType = item.packageType
-                      this.containerType = item.containerType
-                      this.quantity = item.quantity
-                      this.surcharge = item.surcharge
-                      if (!this.surcharge) {
-                        this.surcharge = '0'
-                      }
-                      this.isFillingData = true
-                      this.searchKeyword = item.product
-                      this.showDropdown = false
-                      this.searchResults = []
-                      this.searchInputController.stopEditing()
-                    }
-                  })
-                }
-              }, (item: QuotationRecord, index: number) => item.product + '_' + index.toString())
-            }
-            .width('100%')
-            .constraintSize({ maxHeight: 280 })
-            .backgroundColor(Color.White)
-            .border({ width: 1, color: '#DDDDDD', radius: 4 })
-            .borderRadius({ bottomLeft: 8, bottomRight: 8 })
-            .shadow({ radius: 4, color: '#22000000', offsetY: 2 })
-            .margin({ top: 2 })
-            .scrollBar(BarState.Auto)
-          }
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16 })
-
-        Row({ space: 8 }) {
-          Column() {
-            Text('价格')
-              .fontSize(12)
+          Row({ space: 8 }) {
+            Text(this.rateDate)
+              .fontSize(14)
+              .fontColor('#666666')
+            Text(parseFloat(this.rate).toFixed(2))
+              .fontSize(14)
+              .fontColor('#333333')
+              .fontWeight(FontWeight.Medium)
+            Text(this.currency)
+              .fontSize(14)
+              .fontColor('#666666')
+            Text('执行汇率')
+              .fontSize(13)
               .fontColor('#999999')
+              .margin({ left: 8 })
+            TextInput({ text: this.executeRate, placeholder: '汇率' })
+              .type(InputType.Normal)
+              .fontSize(14)
+              .width(80)
+              .height(32)
+              .padding({ left: 4, right: 4 })
+              .border({ width: 1, color: '#CCCCCC', radius: 4 })
+              .onChange((value: string) => {
+                this.executeRate = value
+              })
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16 })
+
+          Column() {
             Stack({ alignContent: Alignment.End }) {
-              TextInput({ text: this.price, placeholder: '价格' })
-                .type(InputType.NUMBER_DECIMAL)
+              TextInput({ text: this.searchKeyword, placeholder: '搜索产品', controller: this.searchInputController })
                 .fontSize(14)
                 .height(40)
-                .padding({ left: 4, right: 28 })
-                .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                .padding({ left: 12, right: 32 })
+                .border({ width: 1, color: '#CCCCCC', radius: 8 })
                 .onChange((value: string) => {
-                  this.price = value
+                  this.searchKeyword = value
+                  this.product = value
+                  if (this.isFillingData) {
+                    this.isFillingData = false
+                    return
+                  }
+                  if (this.searchKeyword.length === 0) {
+                    this.showAllProducts()
+                  } else {
+                    this.doSearch()
+                  }
                 })
-              if (this.price.length > 0) {
+                .onFocus(() => {
+                  if (this.searchKeyword.length > 0) {
+                    this.doSearch()
+                  } else {
+                    this.showAllProducts()
+                  }
+                })
+                .onBlur(() => {
+                  if (!this.isSelecting) {
+                    this.showDropdown = false
+                  }
+                })
+                .width('100%')
+
+              if (this.searchKeyword.length > 0) {
                 Text('✕')
                   .fontSize(14)
                   .fontColor('#999999')
-                  .width(24)
+                  .width(28)
                   .height(40)
                   .textAlign(TextAlign.Center)
                   .onClick(() => {
-                    this.price = ''
+                    this.searchKeyword = ''
+                    this.product = ''
+                    this.showDropdown = false
                   })
               }
             }
             .width('100%')
-          }
-          .layoutWeight(1)
 
-          Column() {
-            Text('工厂')
-              .fontSize(12)
-              .fontColor('#999999')
-            TextInput({ text: this.factory, placeholder: '工厂' })
-              .fontSize(14)
-              .height(40)
-              .padding({ left: 4, right: 4 })
-              .border({ width: 1, color: '#CCCCCC', radius: 4 })
-              .onChange((value: string) => {
-                this.factory = value
-              })
+            if (this.showDropdown && this.searchResults.length > 0) {
+              List({ space: 0 }) {
+                ForEach(this.searchResults, (item: QuotationRecord, index: number) => {
+                  ListItem() {
+                    Row() {
+                      Text(item.product)
+                        .fontSize(14)
+                        .fontColor('#333333')
+                        .fontWeight(FontWeight.Medium)
+                      Text(' ' + item.factory + ' | ' + item.packageType + ' | ' + item.containerType + ' | ' + item.quantity + ' | ' + item.surcharge)
+                        .fontSize(12)
+                        .fontColor('#999999')
+                    }
+                    .width('100%')
+                    .alignItems(VerticalAlign.Center)
+                    .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                    .onTouch((event: TouchEvent) => {
+                      if (event.type === TouchType.Down) {
+                        this.isSelecting = true
+                      } else if (event.type === TouchType.Up) {
+                        this.product = item.product
+                        this.factory = item.factory
+                        this.packageType = item.packageType
+                        this.containerType = item.containerType
+                        this.quantity = item.quantity
+                        this.surcharge = item.surcharge
+                        if (!this.surcharge) {
+                          this.surcharge = '0'
+                        }
+                        this.isFillingData = true
+                        this.searchKeyword = item.product
+                        this.showDropdown = false
+                        this.searchResults = []
+                        this.searchInputController.stopEditing()
+                      }
+                    })
+                  }
+                }, (item: QuotationRecord, index: number) => item.product + '_' + index.toString())
+              }
+              .width('100%')
+              .constraintSize({ maxHeight: 280 })
+              .backgroundColor(Color.White)
+              .border({ width: 1, color: '#DDDDDD', radius: 4 })
+              .borderRadius({ bottomLeft: 8, bottomRight: 8 })
+              .shadow({ radius: 4, color: '#22000000', offsetY: 2 })
+              .margin({ top: 2 })
+              .scrollBar(BarState.Auto)
+            }
           }
-          .layoutWeight(1)
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16 })
+          .width('100%')
+          .padding({ left: 16, right: 16 })
 
-        Row({ space: 8 }) {
-          Stack({ alignContent: Alignment.TopStart }) {
+          Row({ space: 8 }) {
             Column() {
-              Text('包装')
+              Text('价格')
                 .fontSize(12)
                 .fontColor('#999999')
-              TextInput({ text: this.packageType, placeholder: '包装', controller: this.packageInputController })
+              Stack({ alignContent: Alignment.End }) {
+                TextInput({ text: this.price, placeholder: '价格' })
+                  .type(InputType.NUMBER_DECIMAL)
+                  .fontSize(14)
+                  .height(40)
+                  .padding({ left: 4, right: 28 })
+                  .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                  .onChange((value: string) => {
+                    this.price = value
+                  })
+                if (this.price.length > 0) {
+                  Text('✕')
+                    .fontSize(14)
+                    .fontColor('#999999')
+                    .width(24)
+                    .height(40)
+                    .textAlign(TextAlign.Center)
+                    .onClick(() => {
+                      this.price = ''
+                    })
+                }
+              }
+              .width('100%')
+            }
+            .layoutWeight(1)
+
+            Column() {
+              Text('工厂')
+                .fontSize(12)
+                .fontColor('#999999')
+              TextInput({ text: this.factory, placeholder: '工厂' })
                 .fontSize(14)
                 .height(40)
                 .padding({ left: 4, right: 4 })
                 .border({ width: 1, color: '#CCCCCC', radius: 4 })
                 .onChange((value: string) => {
-                  this.packageType = value
-                })
-                .onFocus(() => {
-                  // 如果正在选择列表项，则不显示下拉框
-                  if (!this.isSelectingPackage) {
-                    // 如果包装不为空且产品不为空，显示包装列表
-                    if (this.packageType.length > 0 && this.product.length > 0) {
-                      this.packageResults = QuotationRepository.getInstance().getPackagesByProduct(this.tabType, this.product)
-                      this.showPackageDropdown = this.packageResults.length > 0
-                    }
-                  }
-                })
-                .onBlur(() => {
-                  // 延迟隐藏下拉框，让点击事件有机会触发
-                  setTimeout(() => {
-                    this.showPackageDropdown = false
-                    this.isSelectingPackage = false
-                  }, 150)
+                  this.factory = value
                 })
             }
-            .width('100%')
+            .layoutWeight(1)
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16 })
 
-            // 包装下拉列表（悬浮显示）
-            if (this.showPackageDropdown && this.packageResults.length > 0) {
+          Row({ space: 8 }) {
+            Stack({ alignContent: Alignment.TopStart }) {
               Column() {
-                ForEach(this.packageResults, (item: QuotationRecord, index: number) => {
-                  Row() {
-                    Text(item.packageType)
-                      .fontSize(14)
-                      .fontColor('#333333')
-                  }
-                  .width('100%')
+                Text('包装')
+                  .fontSize(12)
+                  .fontColor('#999999')
+                TextInput({ text: this.packageType, placeholder: '包装', controller: this.packageInputController })
+                  .fontSize(14)
                   .height(40)
-                  .padding({ left: 8, right: 8 })
-                  .backgroundColor(Color.White)
-                  .onClick(() => {
-                    this.isSelectingPackage = true
-                    this.packageType = item.packageType
-                    // 根据产品和包装填充柜型、数量、杂费
-                    let record: QuotationRecord | null = QuotationRepository.getInstance().getFirstByProductAndPackage(this.tabType, this.product, item.packageType)
-                    if (record !== null) {
-                      this.containerType = record.containerType
-                      this.quantity = record.quantity
-                      this.surcharge = record.surcharge
-                      if (!this.surcharge) {
-                        this.surcharge = '0'
+                  .padding({ left: 4, right: 4 })
+                  .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                  .onChange((value: string) => {
+                    this.packageType = value
+                  })
+                  .onFocus(() => {
+                    // 如果正在选择列表项，则不显示下拉框
+                    if (!this.isSelectingPackage) {
+                      // 如果包装不为空且产品不为空，显示包装列表
+                      if (this.packageType.length > 0 && this.product.length > 0) {
+                        this.packageResults = QuotationRepository.getInstance().getPackagesByProduct(this.tabType, this.product)
+                        this.showPackageDropdown = this.packageResults.length > 0
+                        if (this.showPackageDropdown) {
+                          this.contentOffsetY = -120
+                        }
                       }
                     }
-                    // 关闭下拉框
-                    this.showPackageDropdown = false
-                    // 让输入框失去焦点
-                    this.packageInputController.stopEditing()
-                    // 延迟重置选择状态
-                    setTimeout(() => {
-                      this.isSelectingPackage = false
-                    }, 200)
                   })
-                }, (item: QuotationRecord, index: number) => index.toString())
+                  .onBlur(() => {
+                    // 延迟隐藏下拉框，让点击事件有机会触发
+                    setTimeout(() => {
+                      this.showPackageDropdown = false
+                      this.isSelectingPackage = false
+                      this.contentOffsetY = 0
+                    }, 150)
+                  })
               }
               .width('100%')
-              .constraintSize({ maxHeight: 200 })
-              .backgroundColor(Color.White)
-              .border({ width: { left: 1, right: 1, bottom: 1 }, color: '#E0E0E0', radius: { bottomLeft: 4, bottomRight: 4 } })
-              .shadow({ radius: 4, color: '#1F000000', offsetY: 2 })
-              .position({ x: 0, y: 56 })
-              .zIndex(999)
+
+              // 包装下拉列表（悬浮显示）
+              if (this.showPackageDropdown && this.packageResults.length > 0) {
+                List({ space: 0 }) {
+                  ForEach(this.packageResults, (item: QuotationRecord, index: number) => {
+                    ListItem() {
+                      Row() {
+                        Text(item.packageType)
+                          .fontSize(14)
+                          .fontColor('#333333')
+                      }
+                      .width('100%')
+                      .height(40)
+                      .padding({ left: 8, right: 8 })
+                      .backgroundColor(Color.White)
+                      .onClick(() => {
+                        this.isSelectingPackage = true
+                        this.packageType = item.packageType
+                        // 根据产品和包装填充柜型、数量、杂费
+                        let record: QuotationRecord | null = QuotationRepository.getInstance().getFirstByProductAndPackage(this.tabType, this.product, item.packageType)
+                        if (record !== null) {
+                          this.containerType = record.containerType
+                          this.quantity = record.quantity
+                          this.surcharge = record.surcharge
+                          if (!this.surcharge) {
+                            this.surcharge = '0'
+                          }
+                        }
+                        // 关闭下拉框
+                        this.showPackageDropdown = false
+                        this.contentOffsetY = 0
+                        // 让输入框失去焦点
+                        this.packageInputController.stopEditing()
+                        // 延迟重置选择状态
+                        setTimeout(() => {
+                          this.isSelectingPackage = false
+                        }, 200)
+                      })
+                    }
+                  }, (item: QuotationRecord, index: number) => index.toString())
+                }
+                .width('100%')
+                .height(Math.min(this.packageResults.length, 4) * 40)
+                .backgroundColor(Color.White)
+                .divider({ strokeWidth: 0 })
+                .border({ width: { left: 1, right: 1, bottom: 1 }, color: '#E0E0E0', radius: { bottomLeft: 4, bottomRight: 4 } })
+                .shadow({ radius: 4, color: '#1F000000', offsetY: 2 })
+                .position({ x: 0, y: 56 })
+                .zIndex(999)
+              }
             }
-          }
-          .layoutWeight(1)
-          .height(56)
+            .layoutWeight(1)
+            .height(56)
 
-          Column() {
-            Text('柜型')
-              .fontSize(12)
-              .fontColor('#999999')
-            TextInput({ text: this.containerType, placeholder: '柜型' })
-              .fontSize(14)
-              .height(40)
-              .padding({ left: 4, right: 4 })
-              .border({ width: 1, color: '#CCCCCC', radius: 4 })
-              .onChange((value: string) => {
-                this.containerType = value
-              })
-          }
-          .layoutWeight(1)
-        }
-        .zIndex(10)
-        .width('100%')
-        .padding({ left: 16, right: 16 })
-
-        Row({ space: 8 }) {
-          Column() {
-            Text('数量')
-              .fontSize(12)
-              .fontColor('#999999')
-            Stack({ alignContent: Alignment.End }) {
-              TextInput({ text: this.quantity, placeholder: '数量' })
-                .type(InputType.NUMBER_DECIMAL)
-                .fontSize(14)
-                .height(40)
-                .padding({ left: 4, right: 28 })
-                .border({ width: 1, color: '#CCCCCC', radius: 4 })
-                .onChange((value: string) => {
-                  this.quantity = value
-                })
-              if (this.quantity.length > 0) {
-                Text('✕')
-                  .fontSize(14)
+            Stack({ alignContent: Alignment.TopStart }) {
+              Column() {
+                Text('柜型')
+                  .fontSize(12)
                   .fontColor('#999999')
-                  .width(24)
+                TextInput({ text: this.containerType, placeholder: '柜型', controller: this.containerInputController })
+                  .fontSize(14)
                   .height(40)
-                  .textAlign(TextAlign.Center)
-                  .onClick(() => {
-                    this.quantity = ''
+                  .padding({ left: 4, right: 4 })
+                  .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                  .onChange((value: string) => {
+                    this.containerType = value
                   })
+                  .onFocus(() => {
+                    if (!this.isSelectingContainer) {
+                      if (this.product.length > 0 && this.factory.length > 0 && this.packageType.length > 0) {
+                        this.containerResults = QuotationRepository.getInstance()
+                          .getContainersByProductAndFactoryAndPackage(this.tabType, this.product, this.factory, this.packageType)
+                        this.showContainerDropdown = this.containerResults.length > 0
+                        if (this.showContainerDropdown) {
+                          this.contentOffsetY = -120
+                        }
+                      }
+                    }
+                  })
+                  .onBlur(() => {
+                    setTimeout(() => {
+                      if (!this.isSelectingContainer) {
+                        this.showContainerDropdown = false
+                        this.contentOffsetY = 0
+                      }
+                    }, 150)
+                  })
+              }
+              .width('100%')
+
+              // 柜型下拉列表
+              if (this.showContainerDropdown && this.containerResults.length > 0) {
+                List({ space: 0 }) {
+                  ForEach(this.containerResults, (item: QuotationRecord, index: number) => {
+                    ListItem() {
+                      Row() {
+                        Text(item.containerType)
+                          .fontSize(14)
+                          .fontColor('#333333')
+                      }
+                      .width('100%')
+                      .height(40)
+                      .padding({ left: 8, right: 8 })
+                      .backgroundColor(Color.White)
+                      .onClick(() => {
+                        this.isSelectingContainer = true
+                        this.containerType = item.containerType
+                        let record: QuotationRecord | null = QuotationRepository.getInstance()
+                          .getFirstByProductAndFactoryAndPackageAndContainer(this.tabType, this.product, this.factory, this.packageType, item.containerType)
+                        if (record !== null) {
+                          this.quantity = record.quantity
+                          this.surcharge = record.surcharge
+                          if (!this.surcharge) {
+                            this.surcharge = '0'
+                          }
+                        }
+                        this.showContainerDropdown = false
+                        this.contentOffsetY = 0
+                        this.containerInputController.stopEditing()
+                        setTimeout(() => {
+                          this.isSelectingContainer = false
+                        }, 200)
+                      })
+                    }
+                  }, (item: QuotationRecord, index: number) => index.toString())
+                }
+                .width('100%')
+                .height(Math.min(this.containerResults.length, 4) * 40)
+                .backgroundColor(Color.White)
+                .divider({ strokeWidth: 0 })
+                .border({ width: { left: 1, right: 1, bottom: 1 }, color: '#E0E0E0', radius: { bottomLeft: 4, bottomRight: 4 } })
+                .shadow({ radius: 4, color: '#1F000000', offsetY: 2 })
+                .position({ x: 0, y: 56 })
+                .zIndex(1000)
               }
             }
             .width('100%')
+            .layoutWeight(1)
+            .height(56)
           }
-          .layoutWeight(1)
+          .zIndex(10)
+          .width('100%')
+          .padding({ left: 16, right: 16 })
 
-          Column() {
-            Text('杂费')
-              .fontSize(12)
-              .fontColor('#999999')
-            Stack({ alignContent: Alignment.End }) {
-              TextInput({ text: this.surcharge, placeholder: '杂费' })
-                .type(InputType.NUMBER_DECIMAL)
-                .fontSize(14)
-                .height(40)
-                .padding({ left: 4, right: 28 })
-                .border({ width: 1, color: '#CCCCCC', radius: 4 })
-                .onChange((value: string) => {
-                  this.surcharge = value
-                })
-              if (this.surcharge.length > 0) {
-                Text('✕')
+          Row({ space: 8 }) {
+            Column() {
+              Text('数量')
+                .fontSize(12)
+                .fontColor('#999999')
+              Stack({ alignContent: Alignment.End }) {
+                TextInput({ text: this.quantity, placeholder: '数量' })
+                  .type(InputType.NUMBER_DECIMAL)
                   .fontSize(14)
-                  .fontColor('#999999')
-                  .width(24)
                   .height(40)
-                  .textAlign(TextAlign.Center)
-                  .onClick(() => {
-                    this.surcharge = ''
+                  .padding({ left: 4, right: 28 })
+                  .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                  .onChange((value: string) => {
+                    this.quantity = value
                   })
+                if (this.quantity.length > 0) {
+                  Text('✕')
+                    .fontSize(14)
+                    .fontColor('#999999')
+                    .width(24)
+                    .height(40)
+                    .textAlign(TextAlign.Center)
+                    .onClick(() => {
+                      this.quantity = ''
+                    })
+                }
               }
+              .width('100%')
             }
-            .width('100%')
+            .layoutWeight(1)
+
+            Column() {
+              Text('杂费')
+                .fontSize(12)
+                .fontColor('#999999')
+              Stack({ alignContent: Alignment.End }) {
+                TextInput({ text: this.surcharge, placeholder: '杂费' })
+                  .type(InputType.NUMBER_DECIMAL)
+                  .fontSize(14)
+                  .height(40)
+                  .padding({ left: 4, right: 28 })
+                  .border({ width: 1, color: '#CCCCCC', radius: 4 })
+                  .onChange((value: string) => {
+                    this.surcharge = value
+                  })
+                if (this.surcharge.length > 0) {
+                  Text('✕')
+                    .fontSize(14)
+                    .fontColor('#999999')
+                    .width(24)
+                    .height(40)
+                    .textAlign(TextAlign.Center)
+                    .onClick(() => {
+                      this.surcharge = ''
+                    })
+                }
+              }
+              .width('100%')
+            }
+            .layoutWeight(1)
           }
-          .layoutWeight(1)
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16 })
+          .width('100%')
+          .padding({ left: 16, right: 16 })
 
         Row({ space: 8 }) {
           Column() {
@@ -481,6 +566,8 @@ export struct QuotationTab {
       .scrollBar(BarState.Off)
       .width('100%')
       .layoutWeight(1)
+      .translate({ y: this.contentOffsetY })
+      .animation({ duration: 250, curve: Curve.EaseInOut })
 
       if (this.results.length > 0) {
         Column({ space: 8 }) {

@@ -101,4 +101,51 @@ export class QuotationRepository {
     
     return null
   }
+
+  // 根据产品、工厂、包装获取柜型列表（去重）
+  getContainersByProductAndFactoryAndPackage(tabType: string, product: string, factory: string, packageType: string): QuotationRecord[] {
+    let allRecords: QuotationRecord[] = this.dataMap[tabType] || []
+    let upperProduct: string = product.toUpperCase()
+    let upperFactory: string = factory.toUpperCase()
+    let upperPackage: string = packageType.toUpperCase()
+    let results: QuotationRecord[] = []
+    let containerSet: Set<string> = new Set()
+
+    for (let i = 0; i < allRecords.length; i++) {
+      if (allRecords[i].product.toUpperCase() === upperProduct &&
+          allRecords[i].factory.toUpperCase() === upperFactory &&
+          allRecords[i].packageType.toUpperCase() === upperPackage) {
+        if (!containerSet.has(allRecords[i].containerType)) {
+          containerSet.add(allRecords[i].containerType)
+          results.push(allRecords[i])
+        }
+      }
+    }
+
+    results.sort((a: QuotationRecord, b: QuotationRecord) => {
+      return a.containerType.localeCompare(b.containerType)
+    })
+
+    return results
+  }
+
+  // 根据产品、工厂、包装、柜型获取匹配的第一条记录
+  getFirstByProductAndFactoryAndPackageAndContainer(tabType: string, product: string, factory: string, packageType: string, containerType: string): QuotationRecord | null {
+    let allRecords: QuotationRecord[] = this.dataMap[tabType] || []
+    let upperProduct: string = product.toUpperCase()
+    let upperFactory: string = factory.toUpperCase()
+    let upperPackage: string = packageType.toUpperCase()
+    let upperContainer: string = containerType.toUpperCase()
+
+    for (let i = 0; i < allRecords.length; i++) {
+      if (allRecords[i].product.toUpperCase() === upperProduct &&
+          allRecords[i].factory.toUpperCase() === upperFactory &&
+          allRecords[i].packageType.toUpperCase() === upperPackage &&
+          allRecords[i].containerType.toUpperCase() === upperContainer) {
+        return allRecords[i]
+      }
+    }
+
+    return null
+  }
 }
