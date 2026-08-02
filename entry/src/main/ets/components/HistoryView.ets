@@ -76,7 +76,7 @@ export struct HistoryView {
                       .fontSize(13)
                       .width('100%')
 
-                    Text(item.packageType + '  ' + item.quantity + 'MT  杂费' + item.surcharge + '  运费' + item.freight + ' ' + (item.currency === '美元' ? 'USD' : 'EURO'))
+                    Text(item.packageType + '  ' + item.quantity + 'MT  杂费' + item.surcharge + 'RMB  运费' + item.freight + '' + (item.currency === '美元' ? 'USD' : 'EURO'))
                       .fontSize(13)
                       .fontColor('#666666')
                       .width('100%')
