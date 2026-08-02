@@ -61,9 +61,19 @@ export struct HistoryView {
                       .fontWeight(FontWeight.Medium)
                       .width('100%')
                       .margin({ top: 4 })
-                    Text(item.currency + ' ' + item.rate + ' ' + item.executeRate + ' ' + item.product + ' ' + item.price + ' ' + item.factory)
+                    Text() {
+                      Span(item.currency + ' ' + item.rate + ' ')
+                        .fontColor('#666666')
+                      Span(item.executeRate + ' ')
+                        .fontColor('#333333')
+                      Span(item.product + ' ')
+                        .fontColor('#333333')
+                      Span(item.price + ' ')
+                        .fontColor('#333333')
+                      Span(item.factory)
+                        .fontColor('#666666')
+                    }
                       .fontSize(13)
-                      .fontColor('#666666')
                       .width('100%')
 
                     Text(item.packageType + ' ' + item.quantity + ' ' + item.surcharge + ' ' + item.freight)
