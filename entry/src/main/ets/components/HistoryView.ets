@@ -130,6 +130,7 @@ export struct HistoryView {
       .height('100%')
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.Spring)
+      .clip(false)
     }
     .width('100%')
     .height('100%')
