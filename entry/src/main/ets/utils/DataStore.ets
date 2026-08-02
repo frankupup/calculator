@@ -1,6 +1,7 @@
 import { preferences } from '@kit.ArkData'
 import { Context } from '@kit.AbilityKit'
 import { HistoryRecord } from '../model/QuotationData'
+import { emitHistoryChanged } from '../constants/Events'
 
 const STORE_NAME: string = 'quotation_history'
 
@@ -77,6 +78,8 @@ export class DataStore {
     try {
       await this.prefs.put('history', jsonStr)
       await this.prefs.flush()
+      // 发布历史记录变化事件
+      emitHistoryChanged({ action: 'save', recordId: record.id })
     } catch (error) {
       console.error('DataStore saveHistory failed:', error)
     }
@@ -97,6 +100,8 @@ export class DataStore {
     try {
       await this.prefs.put('history', jsonStr)
       await this.prefs.flush()
+      // 发布历史记录变化事件
+      emitHistoryChanged({ action: 'delete', recordId: id })
     } catch (error) {
       console.error('DataStore deleteHistory failed:', error)
     }

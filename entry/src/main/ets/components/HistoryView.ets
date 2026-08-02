@@ -1,5 +1,6 @@
 import { HistoryRecord } from '../model/QuotationData'
 import { DataStore } from '../utils/DataStore'
+import { onHistoryChanged, offHistoryChanged } from '../constants/Events'
 
 @Component
 export struct HistoryView {
@@ -9,6 +10,15 @@ export struct HistoryView {
 
   aboutToAppear() {
     this.loadHistory()
+    // 订阅历史记录变化事件
+    onHistoryChanged((data) => {
+      this.loadHistory()
+    })
+  }
+
+  aboutToDisappear() {
+    // 取消订阅，避免内存泄漏
+    offHistoryChanged()
   }
 
   build() {
