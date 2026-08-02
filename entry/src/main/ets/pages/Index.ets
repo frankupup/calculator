@@ -9,9 +9,13 @@ import { DataStore } from '../utils/DataStore'
 @Component
 struct Index {
   @State currentIndex: number = 0
-  @State @Watch('onCurrencyChange') currency: string = CurrencyType.USD
   @State rateDate: string = ''
   @State rate: string = '0'
+  // 为每个tab维护独立的币种状态
+  @State @Watch('onCurrencyNormalChange') currencyNormal: string = CurrencyType.USD
+  @State @Watch('onCurrencyZeroRebateChange') currencyZeroRebate: string = CurrencyType.USD
+  @State @Watch('onCurrencyUsdChange') currencyUsd: string = CurrencyType.USD
+  @State @Watch('onCurrencyRmbChange') currencyRmb: string = CurrencyType.USD
   // 为每个tab维护独立的汇率状态
   @State executeRateNormal: string = '0'
   @State executeRateZeroRebate: string = '0'
@@ -23,7 +27,7 @@ struct Index {
     let context = this.getUIContext().getHostContext() as Context
     await DataStore.getInstance().init(context)
     await QuotationRepository.getInstance().loadData(context)
-    this.fetchRate()
+    this.fetchRate(this.currencyNormal)
   }
 
   build() {
@@ -32,7 +36,7 @@ struct Index {
         TabContent() {
           QuotationTab({
             tabType: TabType.NORMAL,
-            currency: $currency,
+            currency: $currencyNormal,
             rateDate: this.rateDate,
             rate: this.rate,
             executeRate: $executeRateNormal
@@ -43,7 +47,7 @@ struct Index {
         TabContent() {
           QuotationTab({
             tabType: TabType.ZERO_REBATE,
-            currency: $currency,
+            currency: $currencyZeroRebate,
             rateDate: this.rateDate,
             rate: this.rate,
             executeRate: $executeRateZeroRebate
@@ -54,7 +58,7 @@ struct Index {
         TabContent() {
           QuotationTab({
             tabType: TabType.USD,
-            currency: $currency,
+            currency: $currencyUsd,
             rateDate: this.rateDate,
             rate: this.rate,
             executeRate: $executeRateUsd
@@ -65,7 +69,7 @@ struct Index {
         TabContent() {
           QuotationTab({
             tabType: TabType.RMB,
-            currency: $currency,
+            currency: $currencyRmb,
             rateDate: this.rateDate,
             rate: this.rate,
             executeRate: $executeRateRmb
@@ -83,7 +87,8 @@ struct Index {
       .onChange((index: number) => {
         this.currentIndex = index
         if (index < 4) {
-          this.fetchRate()
+          let currency: string = this.getCurrentCurrency()
+          this.fetchRate(currency)
         }
       })
       .width('100%')
@@ -94,19 +99,19 @@ struct Index {
     .backgroundColor('#F5F5F5')
   }
 
-  private async fetchRate() {
+  private async fetchRate(currency: string, forceRefresh: boolean = false) {
     this.rateLoaded = false
     
     // 获取当前tab的执行汇率
     let currentExecuteRate: string = this.getCurrentExecuteRate()
     
-    // 如果当前tab的执行汇率已经有值，则保留不变，不再重新获取
-    if (currentExecuteRate !== '0' && currentExecuteRate.length > 0) {
+    // 如果不是强制刷新，且当前tab的执行汇率已经有值，则保留不变，不再重新获取
+    if (!forceRefresh && currentExecuteRate !== '0' && currentExecuteRate.length > 0) {
       this.rateLoaded = true
       return
     }
     
-    let info: RateInfo = await ExchangeRateFetcher.fetchRate(this.currency)
+    let info: RateInfo = await ExchangeRateFetcher.fetchRate(currency)
     if (info.date.length > 0) {
       this.rateDate = info.date
       this.rate = info.rate.toFixed(2)
@@ -150,7 +155,46 @@ struct Index {
     }
   }
 
-  private onCurrencyChange() {
-    this.fetchRate()
+  private getCurrentCurrency(): string {
+    switch (this.currentIndex) {
+      case 0:
+        return this.currencyNormal
+      case 1:
+        return this.currencyZeroRebate
+      case 2:
+        return this.currencyUsd
+      case 3:
+        return this.currencyRmb
+      default:
+        return CurrencyType.USD
+    }
+  }
+
+  private onCurrencyNormalChange() {
+    // Normal tab货币切换时，强制重新获取汇率
+    if (this.currentIndex === 0) {
+      this.fetchRate(this.currencyNormal, true)
+    }
+  }
+
+  private onCurrencyZeroRebateChange() {
+    // ZeroRebate tab货币切换时，强制重新获取汇率
+    if (this.currentIndex === 1) {
+      this.fetchRate(this.currencyZeroRebate, true)
+    }
+  }
+
+  private onCurrencyUsdChange() {
+    // USD tab货币切换时，强制重新获取汇率
+    if (this.currentIndex === 2) {
+      this.fetchRate(this.currencyUsd, true)
+    }
+  }
+
+  private onCurrencyRmbChange() {
+    // RMB tab货币切换时，强制重新获取汇率
+    if (this.currentIndex === 3) {
+      this.fetchRate(this.currencyRmb, true)
+    }
   }
 }
