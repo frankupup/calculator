@@ -62,7 +62,7 @@ export struct HistoryView {
                       .width('100%')
                       .margin({ top: 4 })
                     Text(item.currency + ' ' + item.rate + ' ' + item.executeRate + ' ' + item.product + ' ' + item.price + ' ' + item.factory)
-                      .fontSize(13)
+                      .fontSize(14)
                       .fontColor('#333333')
                       .width('100%')
 
@@ -72,7 +72,7 @@ export struct HistoryView {
                       .width('100%')
 
                     Text(item.profitRate + '个点: FOB ' + item.fobPrice + ', CFR ' + item.cfrPrice + ', CIF ' + item.cifPrice + '，' + item.profit)
-                      .fontSize(14)
+                      .fontSize(13)
                       .fontColor('#007DFF')
                       .fontWeight(FontWeight.Medium)
                       .width('100%')
