@@ -1,7 +1,7 @@
 import { HistoryRecord } from '../model/QuotationData'
 import { DataStore } from '../utils/DataStore'
 import { onHistoryChanged, offHistoryChanged } from '../constants/Events'
-import { HdsNavigation, HdsNavigationTitleMode, ScrollEffectType, hdsMaterial, BlurStrategy } from '@kit.UIDesignKit'
+import { HdsNavigation, HdsNavigationTitleMode, ScrollEffectType, BlurStrategy } from '@kit.UIDesignKit'
 import { LengthMetrics } from '@kit.ArkUI'
 
 @Component
@@ -27,21 +27,23 @@ export struct HistoryView {
 
   build() {
     HdsNavigation(this.pageInfo) {
-      Scroll(this.scroller) {
-        Column() {
-          if (this.isLoading) {
+      List({ space: 0, scroller: this.scroller }) {
+        if (this.isLoading) {
+          ListItem() {
             LoadingProgress()
               .width(40)
               .height(40)
               .color('#007DFF')
               .margin({ top: 40 })
-          } else if (this.historyList.length === 0) {
+          }
+        } else if (this.historyList.length === 0) {
+          ListItem() {
             Text('暂无计算历史')
               .fontSize(14)
               .fontColor('#999999')
               .margin({ top: 40 })
-          } else {
-            List({ space: 0 }) {
+          }
+        } else {
               ForEach(this.getSortedDates(), (date: string, dateIndex: number) => {
                 ListItem() {
                   Column({ space: 0 }) {
@@ -117,47 +119,48 @@ export struct HistoryView {
                   .margin({ bottom: 8 })
                 }
               }, (date: string) => date)
-            }
-            .width('100%')
-            .layoutWeight(1)
-            .padding({ left: 0, right: 16 })
-          }
         }
-        .width('100%')
-        .height('100%')
       }
       .width('100%')
-      .height('100%')
+      .padding({ left: 0, right: 16 })
       .scrollBar(BarState.Off)
-      .edgeEffect(EdgeEffect.Spring)
+      .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
       .clip(false)
+      .cachedCount(3, true)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F5F5')
     .titleBar({
       enableComponentSafeArea: true,
       style: {
         scrollEffectOpts: {
           enableScrollEffect: true,
-          scrollEffectType: ScrollEffectType.COMMON_BLUR,
+          scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
           blurEffectiveStartOffset: LengthMetrics.vp(0),
           blurEffectiveEndOffset: LengthMetrics.vp(20)
         },
-        blurStrategy: BlurStrategy.ADAPTIVE,
+        // 强制开启动态模糊：部分设备 BlurStrategy.ADAPTIVE 默认策略不生效（官方 FAQ 建议 ENABLE）
+        blurStrategy: BlurStrategy.ENABLE,
         originalStyle: {
           backgroundStyle: {
             backgroundColor: '#00ffffff'
+          },
+          contentStyle: {
+            titleStyle: {
+              // 固定标题文字颜色，避免滚动态默认白色字体在浅色页面不可读
+              mainTitleColor: $r('sys.color.ohos_id_color_text_primary')
+            }
           }
         },
         scrollEffectStyle: {
           backgroundStyle: {
             backgroundColor: '#00ffffff'
+          },
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.ohos_id_color_text_primary')
+            }
           }
-        },
-        systemMaterialEffect: {
-          materialType: hdsMaterial.MaterialType.ADAPTIVE,
-          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
         }
       },
       content: {

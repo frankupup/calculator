@@ -90,6 +90,7 @@ struct Index {
         TabContent() {
           HistoryView()
         }
+        .clip(false) // 嵌套 Tabs 场景下关闭裁剪，保证列表内容可穿透标题栏（官方方案）
         .tabBar(this.customTabBarBuilder(4, '历史'))
       }
       .scrollable(true)
