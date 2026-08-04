@@ -35,7 +35,6 @@ export struct QuotationTab {
   @State showContainerDropdown: boolean = false
   @State isSelectingContainer: boolean = false
   @State containerResults: QuotationRecord[] = []
-  @State contentOffsetY: number = 0
   private packageInputController: TextInputController = new TextInputController()
   private containerInputController: TextInputController = new TextInputController()
   private searchInputController: TextInputController = new TextInputController()
@@ -126,106 +125,112 @@ export struct QuotationTab {
           .padding({ left: 16, right: 16 })
 
           Column() {
-            Stack({ alignContent: Alignment.End }) {
-              TextInput({ text: this.searchKeyword, placeholder: '搜索产品', controller: this.searchInputController })
-                .fontSize(14)
-                .height(40)
-                .padding({ left: 12, right: 32 })
-                .border({ width: 1, color: '#CCCCCC', radius: 8 })
-                .onChange((value: string) => {
-                  this.searchKeyword = value
-                  this.product = value
-                  if (this.isFillingData) {
-                    this.isFillingData = false
-                    return
-                  }
-                  if (this.searchKeyword.length === 0) {
-                    this.showAllProducts()
-                  } else {
-                    this.doSearch()
-                  }
-                })
-                .onFocus(() => {
-                  if (this.searchKeyword.length > 0) {
-                    this.doSearch()
-                  } else {
-                    this.showAllProducts()
-                  }
-                })
-                .onBlur(() => {
-                  if (!this.isSelecting) {
-                    this.showDropdown = false
-                  }
-                })
-                .width('100%')
-
-              if (this.searchKeyword.length > 0) {
-                Text('✕')
+            Stack({ alignContent: Alignment.TopStart }) {
+              Stack({ alignContent: Alignment.End }) {
+                TextInput({ text: this.searchKeyword, placeholder: '搜索产品', controller: this.searchInputController })
                   .fontSize(14)
-                  .fontColor('#999999')
-                  .width(28)
                   .height(40)
-                  .textAlign(TextAlign.Center)
-                  .onClick(() => {
-                    this.searchKeyword = ''
-                    this.product = ''
-                    this.showDropdown = false
+                  .padding({ left: 12, right: 32 })
+                  .border({ width: 1, color: '#CCCCCC', radius: 8 })
+                  .onChange((value: string) => {
+                    this.searchKeyword = value
+                    this.product = value
+                    if (this.isFillingData) {
+                      this.isFillingData = false
+                      return
+                    }
+                    if (this.searchKeyword.length === 0) {
+                      this.showAllProducts()
+                    } else {
+                      this.doSearch()
+                    }
                   })
+                  .onFocus(() => {
+                    if (this.searchKeyword.length > 0) {
+                      this.doSearch()
+                    } else {
+                      this.showAllProducts()
+                    }
+                  })
+                  .onBlur(() => {
+                    if (!this.isSelecting) {
+                      this.showDropdown = false
+                    }
+                  })
+                  .width('100%')
+
+                if (this.searchKeyword.length > 0) {
+                  Text('✕')
+                    .fontSize(14)
+                    .fontColor('#999999')
+                    .width(28)
+                    .height(40)
+                    .textAlign(TextAlign.Center)
+                    .onClick(() => {
+                      this.searchKeyword = ''
+                      this.product = ''
+                      this.showDropdown = false
+                    })
+                }
+              }
+              .width('100%')
+              .height(40)
+
+              // 产品下拉列表（悬浮显示，不挤压下方控件）
+              if (this.showDropdown && this.searchResults.length > 0) {
+                List({ space: 0 }) {
+                  ForEach(this.searchResults, (item: QuotationRecord, index: number) => {
+                    ListItem() {
+                      Row() {
+                        Text(item.product)
+                          .fontSize(14)
+                          .fontColor('#333333')
+                          .fontWeight(FontWeight.Medium)
+                          .maxLines(1)
+                          .textOverflow({ overflow: TextOverflow.Ellipsis })
+                        Text(' ' + item.factory + ' | ' + item.packageType + ' | ' + item.containerType + ' | ' + item.quantity + ' | ' + item.surcharge)
+                          .fontSize(12)
+                          .fontColor('#999999')
+                          .maxLines(1)
+                          .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      }
+                      .width('100%')
+                      .height(40)
+                      .alignItems(VerticalAlign.Center)
+                      .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                      .onClick(() => {
+                        // 仅在点击时选中，滑动列表不会误选
+                        this.selectProduct(item)
+                      })
+                      .onTouch((event: TouchEvent) => {
+                        if (event.type === TouchType.Down) {
+                          this.isSelecting = true
+                        } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+                          setTimeout(() => {
+                            this.isSelecting = false
+                          }, 300)
+                        }
+                      })
+                    }
+                  }, (item: QuotationRecord, index: number) => item.product + '_' + index.toString())
+                }
+                .width('100%')
+                .height(Math.min(this.searchResults.length, 7) * 40)
+                .backgroundColor(Color.White)
+                .border({ width: 1, color: '#DDDDDD', radius: 4 })
+                .borderRadius({ bottomLeft: 8, bottomRight: 8 })
+                .shadow({ radius: 4, color: '#22000000', offsetY: 2 })
+                .position({ x: 0, y: 42 })
+                .zIndex(999)
+                .scrollBar(BarState.Auto)
               }
             }
             .width('100%')
-
-            if (this.showDropdown && this.searchResults.length > 0) {
-              List({ space: 0 }) {
-                ForEach(this.searchResults, (item: QuotationRecord, index: number) => {
-                  ListItem() {
-                    Row() {
-                      Text(item.product)
-                        .fontSize(14)
-                        .fontColor('#333333')
-                        .fontWeight(FontWeight.Medium)
-                      Text(' ' + item.factory + ' | ' + item.packageType + ' | ' + item.containerType + ' | ' + item.quantity + ' | ' + item.surcharge)
-                        .fontSize(12)
-                        .fontColor('#999999')
-                    }
-                    .width('100%')
-                    .alignItems(VerticalAlign.Center)
-                    .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-                    .onTouch((event: TouchEvent) => {
-                      if (event.type === TouchType.Down) {
-                        this.isSelecting = true
-                      } else if (event.type === TouchType.Up) {
-                        this.product = item.product
-                        this.factory = item.factory
-                        this.packageType = item.packageType
-                        this.containerType = item.containerType
-                        this.quantity = item.quantity
-                        this.surcharge = item.surcharge
-                        if (!this.surcharge) {
-                          this.surcharge = '0'
-                        }
-                        this.isFillingData = true
-                        this.searchKeyword = item.product
-                        this.showDropdown = false
-                        this.searchResults = []
-                        this.searchInputController.stopEditing()
-                      }
-                    })
-                  }
-                }, (item: QuotationRecord, index: number) => item.product + '_' + index.toString())
-              }
-              .width('100%')
-              .constraintSize({ maxHeight: 280 })
-              .backgroundColor(Color.White)
-              .border({ width: 1, color: '#DDDDDD', radius: 4 })
-              .borderRadius({ bottomLeft: 8, bottomRight: 8 })
-              .shadow({ radius: 4, color: '#22000000', offsetY: 2 })
-              .margin({ top: 2 })
-              .scrollBar(BarState.Auto)
-            }
+            .height(40)
           }
           .width('100%')
           .padding({ left: 16, right: 16 })
+          .zIndex(100)
 
           Row({ space: 8 }) {
             Column() {
@@ -298,9 +303,6 @@ export struct QuotationTab {
                       if (this.packageType.length > 0 && this.product.length > 0) {
                         this.packageResults = QuotationRepository.getInstance().getPackagesByProduct(this.tabType, this.product)
                         this.showPackageDropdown = this.packageResults.length > 0
-                        if (this.showPackageDropdown) {
-                          this.contentOffsetY = -120
-                        }
                       }
                     }
                   })
@@ -309,7 +311,6 @@ export struct QuotationTab {
                     setTimeout(() => {
                       this.showPackageDropdown = false
                       this.isSelectingPackage = false
-                      this.contentOffsetY = 0
                     }, 150)
                   })
               }
@@ -344,7 +345,6 @@ export struct QuotationTab {
                         }
                         // 关闭下拉框
                         this.showPackageDropdown = false
-                        this.contentOffsetY = 0
                         // 让输入框失去焦点
                         this.packageInputController.stopEditing()
                         // 延迟重置选择状态
@@ -387,9 +387,6 @@ export struct QuotationTab {
                         this.containerResults = QuotationRepository.getInstance()
                           .getContainersByProductAndFactoryAndPackage(this.tabType, this.product, this.factory, this.packageType)
                         this.showContainerDropdown = this.containerResults.length > 0
-                        if (this.showContainerDropdown) {
-                          this.contentOffsetY = -120
-                        }
                       }
                     }
                   })
@@ -397,7 +394,6 @@ export struct QuotationTab {
                     setTimeout(() => {
                       if (!this.isSelectingContainer) {
                         this.showContainerDropdown = false
-                        this.contentOffsetY = 0
                       }
                     }, 150)
                   })
@@ -431,7 +427,6 @@ export struct QuotationTab {
                           }
                         }
                         this.showContainerDropdown = false
-                        this.contentOffsetY = 0
                         this.containerInputController.stopEditing()
                         setTimeout(() => {
                           this.isSelectingContainer = false
@@ -642,8 +637,6 @@ export struct QuotationTab {
     .width('100%')
     .layoutWeight(1)
     .align(Alignment.TopStart)
-    .translate({ y: this.contentOffsetY })
-    .animation({ duration: 250, curve: Curve.EaseInOut })
     }
     .width('100%')
     .height('100%')
@@ -663,6 +656,27 @@ export struct QuotationTab {
     let repo: QuotationRepository = QuotationRepository.getInstance()
     this.searchResults = repo.search(this.tabType, this.searchKeyword)
     this.showDropdown = this.searchKeyword.length > 0
+  }
+
+  private selectProduct(item: QuotationRecord) {
+    this.isSelecting = true
+    this.product = item.product
+    this.factory = item.factory
+    this.packageType = item.packageType
+    this.containerType = item.containerType
+    this.quantity = item.quantity
+    this.surcharge = item.surcharge
+    if (!this.surcharge) {
+      this.surcharge = '0'
+    }
+    this.isFillingData = true
+    this.searchKeyword = item.product
+    this.showDropdown = false
+    this.searchResults = []
+    this.searchInputController.stopEditing()
+    setTimeout(() => {
+      this.isSelecting = false
+    }, 300)
   }
 
   private async calculate() {
@@ -723,10 +737,9 @@ export struct QuotationTab {
     this.results = calcResults
     this.calcTimestamp = Date.now()
     
-    // 关闭所有下拉框，重置Scroll位置
+    // 关闭所有下拉框
     this.showDropdown = false
     this.showPackageDropdown = false
-    this.contentOffsetY = 0
     
     await this.saveToHistory(calcResults)
   }
