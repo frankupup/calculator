@@ -1,6 +1,7 @@
 import { preferences } from '@kit.ArkData'
 import { Context } from '@kit.AbilityKit'
 import { HistoryRecord } from '../model/QuotationData'
+import { RateInfo } from './ExchangeRateFetcher'
 import { emitHistoryChanged } from '../constants/Events'
 
 const STORE_NAME: string = 'quotation_history'
@@ -104,6 +105,40 @@ export class DataStore {
       emitHistoryChanged({ action: 'delete', recordId: id })
     } catch (error) {
       console.error('DataStore deleteHistory failed:', error)
+    }
+  }
+
+  // 读取某币种上次成功获取的汇率缓存
+  async getCachedRate(currency: string): Promise<RateInfo | null> {
+    if (this.prefs === null) {
+      return null
+    }
+    try {
+      let jsonStr: string = await this.prefs.get('last_rate_' + currency, '') as string
+      if (jsonStr.length === 0) {
+        return null
+      }
+      let obj: Record<string, string> = JSON.parse(jsonStr) as Record<string, string>
+      let info: RateInfo = new RateInfo()
+      info.date = obj['date'] || ''
+      info.rate = parseFloat(obj['rate'] || '0')
+      return info
+    } catch (error) {
+      console.error('DataStore getCachedRate failed:', error)
+      return null
+    }
+  }
+
+  // 保存某币种的成功汇率（供下次失败时兜底）
+  async saveCachedRate(currency: string, info: RateInfo): Promise<void> {
+    if (this.prefs === null || info.date.length === 0) {
+      return
+    }
+    try {
+      await this.prefs.put('last_rate_' + currency, JSON.stringify({ date: info.date, rate: info.rate.toString() }))
+      await this.prefs.flush()
+    } catch (error) {
+      console.error('DataStore saveCachedRate failed:', error)
     }
   }
 }

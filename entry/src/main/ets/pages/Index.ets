@@ -23,6 +23,8 @@ struct Index {
   @State executeRateUsd: string = '0'
   @State executeRateRmb: string = '0'
   @State rateLoaded: boolean = false
+  // 汇率失败 toast 节流时间戳
+  private lastRateToastTime: number = 0
 
   @Builder
   customTabBarBuilder(index: number, name: string) {
@@ -132,13 +134,46 @@ struct Index {
     }
     
     let info: RateInfo = await ExchangeRateFetcher.fetchRate(currency)
-    if (info.date.length > 0) {
+    let store: DataStore = DataStore.getInstance()
+    
+    if (info.date.length > 0 && info.rate > 0) {
+      // 获取成功：展示最新汇率，并更新当天缓存
       this.rateDate = info.date
       this.rate = info.rate.toFixed(2)
       // 更新当前tab的执行汇率
       this.setCurrentExecuteRate(info.rate.toFixed(2))
+      await store.saveCachedRate(currency, info)
+    } else {
+      // 获取失败：仅当缓存是当天日期时兜底使用
+      let cached: RateInfo | null = await store.getCachedRate(currency)
+      let today: string = this.formatToday()
+      if (cached !== null && cached.date === today && cached.rate > 0) {
+        this.rateDate = cached.date
+        this.rate = cached.rate.toFixed(2)
+        this.setCurrentExecuteRate(cached.rate.toFixed(2))
+        this.showRateToast('汇率获取失败，已使用上次汇率')
+      } else {
+        // 无缓存或缓存非当天（含周末）：不更新界面，仅提示
+        this.showRateToast('汇率获取失败')
+      }
     }
     this.rateLoaded = true
+  }
+  
+  // 汇率提示 toast：10 秒内只弹一次，避免快速切换tab时连弹
+  private showRateToast(message: string) {
+    let now: number = Date.now()
+    if (now - this.lastRateToastTime >= 10000) {
+      this.lastRateToastTime = now
+      this.getUIContext().getPromptAction().showToast({ message: message })
+    }
+  }
+  
+  private formatToday(): string {
+    let d: Date = new Date()
+    let month: string = (d.getMonth() + 1).toString().padStart(2, '0')
+    let day: string = d.getDate().toString().padStart(2, '0')
+    return d.getFullYear().toString() + '-' + month + '-' + day
   }
   
   // 获取当前tab的执行汇率
