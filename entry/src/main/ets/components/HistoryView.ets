@@ -82,6 +82,11 @@ export struct HistoryView {
                             .fontColor('#666666')
                           Span(item.executeRate + ' ')
                             .fontColor('#333333')
+                        }
+                          .fontSize(13)
+                          .width('100%')
+
+                        Text() {
                           Span(item.product + ' ')
                             .fontColor('#333333')
                           Span(item.price + ' ')
@@ -94,7 +99,7 @@ export struct HistoryView {
 
                         Text(item.packageType + '  ' + item.quantity + 'MT  杂费' + item.surcharge + 'RMB  运费' + item.freight + '' + (item.currency === '美元' ? 'USD' : 'EURO'))
                           .fontSize(13)
-                          .fontColor('#666666')
+                          .fontColor('#333333')
                           .width('100%')
 
                         Text(item.profitRate + '个点: FOB ' + item.fobPrice + ', CFR ' + item.cfrPrice + ', CIF ' + item.cifPrice + ', ' + item.profit + ' ' + (item.currency === '美元' ? 'USD/MT' : 'EURO/MT'))
@@ -198,23 +203,29 @@ export struct HistoryView {
     return dates.sort((a: string, b: string) => b.localeCompare(a))
   }
 
-  // 分组表头：yyyy-mm-dd 周几
-  private formatDateWithWeekday(dateStr: string): string {
+  // YYYY-MM-DD → 周几（格式异常返回空串）
+  private getWeekday(dateStr: string): string {
     let parts: string[] = dateStr.split('-')
     if (parts.length !== 3) {
-      return dateStr
+      return ''
     }
     let d: Date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
     let weekdays: string[] = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-    return dateStr + ' ' + weekdays[d.getDay()]
+    return weekdays[d.getDay()]
   }
 
-  // 汇率日期前缀：YYYY-MM-DD → mm-dd（无值返回空串，兼容老记录）
+  // 分组表头：yyyy-mm-dd 周几
+  private formatDateWithWeekday(dateStr: string): string {
+    let w: string = this.getWeekday(dateStr)
+    return w.length > 0 ? dateStr + ' ' + w : dateStr
+  }
+
+  // 汇率日期前缀：YYYY-MM-DD → mm-dd 周几（无值返回空串，兼容老记录）
   private formatRateDateShort(rateDate: string): string {
     if (rateDate.length < 10) {
       return ''
     }
-    return rateDate.substring(5, 10) + ' '
+    return rateDate.substring(5, 10) + ' ' + this.getWeekday(rateDate) + ' '
   }
 
   private groupByDate() {
