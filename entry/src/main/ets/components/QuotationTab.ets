@@ -759,7 +759,7 @@ export struct QuotationTab {
       id: Date.now().toString(),
       tabType: this.tabType,
       label: label,
-      date: this.rateDate,
+      date: this.formatToday(),
       rate: this.rate,
       executeRate: this.executeRate,
       currency: this.currency,
@@ -778,6 +778,14 @@ export struct QuotationTab {
       profit: mainResult.profit.toString()
     }
     await store.saveHistory(record)
+  }
+
+  // 当前计算日期 YYYY-MM-DD（历史记录按计算日期分组展示）
+  private formatToday(): string {
+    let d: Date = new Date()
+    let month: string = (d.getMonth() + 1).toString().padStart(2, '0')
+    let day: string = d.getDate().toString().padStart(2, '0')
+    return d.getFullYear().toString() + '-' + month + '-' + day
   }
 
   private getTabLabel(): string {
