@@ -40,6 +40,7 @@ export class DataStore {
           tabType: obj['tabType'] || '',
           label: obj['label'] || '',
           date: obj['date'] || '',
+          rateDate: obj['rateDate'] || '',
           rate: obj['rate'] || '',
           executeRate: obj['executeRate'] || '',
           currency: obj['currency'] || '',

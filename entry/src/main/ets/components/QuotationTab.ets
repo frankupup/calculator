@@ -760,6 +760,7 @@ export struct QuotationTab {
       tabType: this.tabType,
       label: label,
       date: this.formatToday(),
+      rateDate: this.rateDate,
       rate: this.rate,
       executeRate: this.executeRate,
       currency: this.currency,

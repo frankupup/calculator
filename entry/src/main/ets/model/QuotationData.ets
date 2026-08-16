@@ -12,6 +12,7 @@ export interface HistoryRecord {
   tabType: string
   label: string
   date: string
+  rateDate: string
   rate: string
   executeRate: string
   currency: string

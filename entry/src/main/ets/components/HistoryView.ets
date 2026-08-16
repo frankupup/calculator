@@ -47,7 +47,7 @@ export struct HistoryView {
               ForEach(this.getSortedDates(), (date: string, dateIndex: number) => {
                 ListItem() {
                   Column({ space: 0 }) {
-                    Text(date)
+                    Text(this.formatDateWithWeekday(date))
                       .fontSize(14)
                       .fontColor('#999999')
                       .fontWeight(FontWeight.Bold)
@@ -76,6 +76,8 @@ export struct HistoryView {
                           .width('100%')
                           .margin({ top: 4 })
                         Text() {
+                          Span(this.formatRateDateShort(item.rateDate))
+                            .fontColor('#999999')
                           Span(item.currency + ' ' + item.rate + ' ')
                             .fontColor('#666666')
                           Span(item.executeRate + ' ')
@@ -194,6 +196,25 @@ export struct HistoryView {
       dates.push(key)
     })
     return dates.sort((a: string, b: string) => b.localeCompare(a))
+  }
+
+  // 分组表头：yyyy-mm-dd 周几
+  private formatDateWithWeekday(dateStr: string): string {
+    let parts: string[] = dateStr.split('-')
+    if (parts.length !== 3) {
+      return dateStr
+    }
+    let d: Date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
+    let weekdays: string[] = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    return dateStr + ' ' + weekdays[d.getDay()]
+  }
+
+  // 汇率日期前缀：YYYY-MM-DD → mm-dd（无值返回空串，兼容老记录）
+  private formatRateDateShort(rateDate: string): string {
+    if (rateDate.length < 10) {
+      return ''
+    }
+    return rateDate.substring(5, 10) + ' '
   }
 
   private groupByDate() {
